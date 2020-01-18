@@ -1,0 +1,10 @@
+#!/bin/bash
+# Run save_page_as for every page that requires saving.
+# https://github.com/abiyani/automate-save-page-as
+
+address="https://www.yellowpages.com.au/search/listings?clue=electricians+electrical+contractors&locationClue=sydney+cbd+nsw&lat=&lon=&referredBy=www.yellowpages.com.au&selectedViewMode=list&eventType=refinement&openNow=false&sortBy=relevance&suburb=Sydney+NSW"
+browser="firefox"
+destination="/home/webscraper/Documents/Newscrape/Pages/test12.html"
+waittime=12
+
+./save_page_as $address "--browser" $browser "--destination" $destination --save-wait-time $waittime
