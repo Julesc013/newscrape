@@ -248,9 +248,14 @@ sleep 1s #
 xdotool key --clearmodifiers Down
 sleep 1s #
 xdotool key --clearmodifiers "ctrl+c"
-# Paste to new file
-rm ~/Documents/Newscrape/Binaries/resultshtml.txt
-xclip -out -selection clipboard >> ~/Documents/Newscrape/Binaries/resultshtml.txt
+
+# Process number
+resultsnumber=$(xclip -out -selection clipboard)
+pagesnumber=$(python -c "from math import ceil; print ceil($resultsnumber/25)")
+
+# Paste to fresh file
+rm ~/Documents/Newscrape/Binaries/pagesnumber.txt
+pagesnumber >> ~/Documents/Newscrape/Binaries/pagesnumber.txt
 printf "SAVE-AS: INFO: Got number of results.\n">&2
 
 # Close the browser tab/window (Ctrl+w for KDE, Ctrl+F4 otherwise)
