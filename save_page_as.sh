@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# MODIFIED FOR NEWSCRAPE
+
 set -e
 set -u
 set -o pipefail
@@ -220,6 +222,18 @@ xdotool windowactivate "${savefile_wid}" key --delay 20 --clearmodifiers Return
 
 printf "INFO: Saving web page ...\n" >&2
 
+# Get number of results
+xdotool key --delay 20 --clearmodifiers F12
+xdotool key --delay 2 --clearmodifiers tab
+xdotool type --delay 10 --clearmodifiers "cell search-message first-cell"
+xdotool key --delay 2 --clearmodifiers Return
+xdotool key --delay 2 --clearmodifiers tab
+xdotool key --delay 2 --clearmodifiers tab
+xdotool key --delay 2 --clearmodifiers tab
+xdotool key --delay 2 --clearmodifiers down
+xdotool key --delay 2 --clearmodifiers "ctrl+c"
+resultshtml=$(xclip -out -selection clipboard)
+
 # Wait for the file to be completely saved
 sleep ${save_wait_time}
 
@@ -230,3 +244,6 @@ else
     xdotool windowactivate "${browser_wid}" key --clearmodifiers "ctrl+F4"
 fi
 printf "INFO: Done!\n">&2
+
+# Return the number of results
+return resultshtml
