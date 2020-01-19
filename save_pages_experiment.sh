@@ -8,13 +8,13 @@ loadwait=12
 savewait=12
 browser="firefox"
 
-maxpages=3
-declare -a addressbase=("https://www.yellowpages.com.au/search/listings?clue=" "&eventType=pagination&openNow=false&pageNumber=" "&referredBy=UNKNOWN&&state=" "&suburb=" "+" # [0], clue, [1], page, [2] state, [3] suburb+state
+maxpages=5
+declare -a addressbase=("https://www.yellowpages.com.au/search/listings?clue=" "&eventType=pagination&openNow=false&pageNumber=" "&referredBy=UNKNOWN&&state=" "&suburb=" "+") # [0], clue, [1], page, [2] state, [3] suburb+state
 directory="/home/webscraper/Documents/Newscrape/Pages/" # then add "filename.html"
 
 
 # Declare search terms
-declare -a clues=("electricians+electrical+contractors" "plumbers+gas+fitters" "builders+building+contractors")
+declare -a clues=('electricians+electrical+contractors' 'plumbers+gas+fitters' 'builders+building+contractors')
 
 # Later: cross reference with suburbs of other clues (catagories)
 declare -a suburbsNSW=('Dubbo' 'Wagga+Wagga' 'Sydney')
@@ -34,12 +34,14 @@ do
 
       # Loop through pages
 
-      for page in {1..$maxpages}
+      for page in $(seq 1 $maxpages)
       do
 
          # Construct URL
          address="${addressbase[0]}${clue}${addressbase[1]}${page}${addressbase[2]}NSW${addressbase[3]}${suburb}+NSW"
          destination="${directory}/${clue}-NSW-${suburb}-${page}.html"
+
+         echo $address #debug!!!
 
          ./save_page_as.sh $address "--browser" $browser "--destination" $destination --load-wait-time $loadwait --save-wait-time $savewait
 
