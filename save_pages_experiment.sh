@@ -5,7 +5,7 @@
 
 # Declare universal variables.
 loadwait=12
-savewait=12
+savewait=4
 browser="firefox"
 
 maxpages=5
@@ -21,6 +21,9 @@ declare -a suburbsNSW=('Dubbo' 'Wagga+Wagga' 'Sydney')
 declare -a suburbsVIC=('Melbourne' 'Bendigo' 'Ringwood')
 declare -a suburbsQLD=('Cleveland' 'Townsville' 'Cairns')
 
+
+# Remove existing pages (from the last scrape)
+rm ~/Documents/Newscrape/Pages/*.html
 
 # Loop through clues
 for clue in "${clues[@]}"
@@ -44,6 +47,9 @@ do
          echo $address #debug!!!
 
          ./save_page_as.sh $address "--browser" $browser "--destination" $destination --load-wait-time $loadwait --save-wait-time $savewait
+
+         resultshtml=$(cat ~/Documents/Newscrape/Binaries/resultshtml.txt)
+         echo $resultshtml
 
       done
 
