@@ -8,9 +8,9 @@ loadwait=12
 savewait=12
 browser="firefox"
 
-declare -a baseaddress=("https://www.yellowpages.com.au/search/listings?clue=" CLUE "&eventType=pagination&openNow=false&pageNumber=" 000000 "&referredBy=UNKNOWN&&state=" STATE "&suburb=" SUBURB "+" STATE
+declare -a addressbase=("https://www.yellowpages.com.au/search/listings?clue=" "&eventType=pagination&openNow=false&pageNumber=" "&referredBy=UNKNOWN&&state=" "&suburb=" "+" # [0], clue, [1], page, [2] state, [3] suburb+state
 
-savedirectory="/home/webscraper/Documents/Newscrape/Pages/" # then add "filename.html"
+directory="/home/webscraper/Documents/Newscrape/Pages/" # then add "filename.html"
 
 
 # Declare search terms
@@ -26,13 +26,29 @@ declare -a suburbsTAS=('Launceston' 'Moonah' 'Hobart' 'North+Hobart' 'Glenorchy'
 declare -a suburbsACT=('Fyshwick' 'Mitchell' 'Canberra' 'Belconnen' 'Kambah' 'Holt' 'Hume' 'Amaroo' 'Banks' 'Barton' 'Calwell' 'Chisholm' 'Conder' 'Gordon' 'Greenway' 'Kingston' 'Ngunnawal' 'Nicholls' 'Acton' 'Gungahlin' 'Wanniassa' 'Ainslie' 'Braddon' 'Evatt' 'Fadden' 'Farrer' 'Hall' 'Kaleen' 'Melba' 'Monash' 'Pearce' 'Phillip' 'Tuggeranong' 'Weston' 'Bonython' 'Casey' 'Chifley' 'Florey' 'Flynn' 'Franklin' 'Giralang' 'Isabella+Plains' 'Torrens' 'Yarralumla' 'Bruce' 'Charnwood' 'Curtin' 'Downer' 'Griffith' 'Hawker' 'Mckellar' 'Narrabundah' 'Oxley' 'Page' 'Queanbeyan' 'Aranda' 'Beard' 'Brindabella' 'Bywong' 'Cook' 'Crace' 'Dickson' 'Dunlop' 'Forde' 'Forrest' 'Fraser' 'Gilmore' 'Hackett' 'Harrison' 'Higgins' 'Isaacs' 'Lyons' "O'connor" 'Palmerston' 'Red+Hill' 'Richardson' 'Scullin' 'Spence' 'Stirling' 'Theodore' 'Watson' 'Wright' 'Yass' 'Bonner' 'Campbell' 'Chapman' 'Coombs' 'Googong' 'Gowrie' 'Greenleigh' 'Hughes' 'Karabar' 'Lawson' 'Lyneham' 'Macquarie' 'Moncrieff' 'Oconnor' 'Rivett' 'Turner' 'Uriarra+Village' 'Weetangera' 'Weston+Creek')
 declare -a suburbsNT=('Winnellie' 'Berrimah' 'Ciccone' 'Humpty+Doo' 'Darwin' 'Yarrawonga' 'Howard+Springs' 'Palmerston+City' 'Holtze' 'Alice+Springs' 'Larrakeyah' 'Katherine' 'Leanyer' 'Pinelands' 'Coconut+Grove' 'Katherine+East' 'Tennant+Creek' 'Stuart+Park' 'Virginia' 'Woolner' 'Moulden' 'Nightcliff' 'Anula' 'Araluen' 'Bees+Creek' 'Girraween' 'Herbert' 'Jabiru' 'Katherine+South' 'Marlow+Lagoon' 'Nhulunbuy' 'Noonamah' 'Wanguri' 'Wulagi' 'Bakewell' 'Berry+Springs' 'Borroloola' 'Brinkin' 'Casuarina' 'Durack' 'Farrar' 'Gillen' 'Gunn' 'Hudson' 'Knuckey+Lagoon' 'Malak' 'Rapid+Creek' 'Rosebery' 'Uralla' 'Woodroffe' 'Yulara' 'Adelaide+River' 'Alyangula' 'Angurugu' 'Banyo' 'Batchelor' 'Bayview' 'Bellamack' 'Beswick' 'Braitling' 'Coonawarra' 'Daly' 'Darwin+River' 'Driver' 'Dundee+Beach' 'Dundee+Downs' 'Gray' 'Ilparpa' 'Jingili' 'Kilgariff' 'Larapinta' 'Livingstone' 'Lloyd+Creek' 'Ludmilla' 'Marrara' 'Mcminns+Lagoon' 'Millner' 'Moil' 'Nakara' 'Nicholson' 'Parap' 'Pine+Creek' 'Tindal' 'Tiwi')
 
-# now loop through the above array
-for i in "${arr[@]}"
+# Loop through clues
+for clue in "${clues[@]}"
 do
-   echo "$i"
-   # or do whatever with individual element of the array
+
+   # Do each state
+   # Loop through suburbs
+
+   for suburb in "${suburbsNSW[@]}" # NSW
+   do
+
+      # Loop through pages
+
+      for page in {1..3}
+      do
+
+         # Construct URL
+         address="${addressbase[0]}${clue}${addressbase[1]}${page}${addressbase[2]}NSW${addressbase[3]}${suburb}+NSW"
+         destination="${directory}/${clue}-NSW-${suburb}-${page}.html"
+
+         ./save_page_as $address "--browser" $browser "--destination" $destination --load-wait-time $loadwait --save-wait-time $savewait
+
+      done
+
+   done
+
 done
-
-# You can access them using echo "${arr[0]}", "${arr[1]}" also
-
-./save_page_as $address "--browser" $browser "--destination" $destination --load-wait-time $loadwait --save-wait-time $savewait
