@@ -19,7 +19,7 @@ destination="."
 browser="google-chrome"
 suffix=""
 url=""
-get_pages_number=false # CUSTOM VARIABLE (USED AT END)
+#get_pages_number=false # CUSTOM VARIABLE (USED AT END)
 
 function print_usage() {
     printf "\n%s: Open the given url in a browser tab/window, perform 'Save As' operation and close the tab/window.\n\n" "${scriptname}" >&2
@@ -31,7 +31,7 @@ function print_usage() {
     printf "  -b, --browser          Browser executable to be used (must be one of 'google-chrome', 'chromium-browser' or 'firefox'). Default = '%s'.\n" "${browser}" >&2
     printf "  --load-wait-time       Number of seconds to wait for the page to be loaded (i.e., seconds to sleep before Ctrl+S is 'pressed'). Default = %s\n" "${load_wait_time}" >&2
     printf "  --save-wait-time       Number of seconds to wait for the page to be saved (i.e., seconds to sleep before Ctrl+F4 is 'pressed'). Default = %s\n" "${save_wait_time}" >&2
-    printf "  --get-pages-number    Scrape the number of pages of listings from the clue url just retrieved and save it to a text file. Default = %s\n" "${get_pages_number}" >&2
+    #printf "  --get-pages-number     Scrape the number of pages of listings from the clue url just retrieved and save it to a text file. Default = %s\n" "${get_pages_number}" >&2
     printf "  -h, --help             Display this help message and exit.\n" >&2
 }
 
@@ -68,11 +68,11 @@ do
             print_usage
             exit 0
             ;;
-        --get-pages-number) # CUSTOM OPTION
-            shift;
-            get_pages_number=true
-            shift
-            ;;
+        #--get-pages-number) # CUSTOM OPTION
+        #    shift;
+        #    get_pages_number=true
+        #    shift
+        #    ;;
         -*)
             printf "SAVE-AS: ERROR: Unknown option: %s\n" "${1}">&2
             print_usage
@@ -234,7 +234,8 @@ sleep ${save_wait_time}
 printf "SAVE-AS: INFO: Saved.\n">&2
 
 # Get number of pages of results with this clue
-if [ "$get_pages_number" = true ]
+#if [ "$get_pages_number" = true ]
+if [ "$(cat ~/Documents/Newscrape/Binaries/pagesnumber.txt)" = "-1" ]
 then
     printf "SAVE-AS: INFO: Getting number of results...\n" >&2
     sleep 1s #
