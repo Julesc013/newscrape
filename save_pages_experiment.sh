@@ -3,7 +3,7 @@
 # https://github.com/abiyani/automate-save-page-as
 
 
-printf "SAVER: Saving all pages...\n">&2
+printf "\e[33mSaving all pages...\n\e[0m">&2
 
 # Declare universal variables.
 loadwait=12
@@ -25,9 +25,9 @@ declare -a suburbsQLD=('Cleveland' 'Townsville' 'Cairns')
 
 
 # Remove existing pages (from the last scrape)
-printf "SAVER: Removing existing pages...">&2
-rm ~/Documents/Newscrape/Pages/*.html
-printf " Done.\n">&2
+printf "\e[33mRemoving existing pages...\e[0m">&2
+rm ~/Documents/Newscrape/Pages/*
+printf "\e[32m Done.\n\e[0m">&2
 
 # Loop through clues
 for clue in "${clues[@]}"
@@ -51,7 +51,7 @@ do
       while [ "$page" -le "$pagesnumber" -o "$pagesnumber" = "-1" ]
       do
 
-         printf "SAVER: Saving '${clue}-NSW-${suburb}-${page}'...\n">&2
+         printf "\e[33mGetting '${clue}-NSW-${suburb}-${page}'...\n\e[0m">&2
 
          # Construct URL
          address="${addressbase[0]}${clue}${addressbase[1]}${page}${addressbase[2]}NSW${addressbase[3]}${suburb}+NSW"
@@ -71,7 +71,7 @@ do
 
          ((page++)) # Increment page counter.
 
-         printf "SAVER: Saved.\n">&2
+         #printf "\e[32mSaved.\n\e[0m">&2
 
       done
 

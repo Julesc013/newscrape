@@ -8,7 +8,7 @@ set -o pipefail
 
 # Assert existence of xdotool to begin with
 if ! xdotool --help &>/dev/null; then
-    printf "SAVE-AS: ERROR: 'xdotool' is not present (or not in the PATH). Please visit http://www.semicomplete.com/projects/xdotool/ to download it for your platform.\n" >&2
+    printf "\e[31mERROR: 'xdotool' is not present (or not in the PATH). Please visit http://www.semicomplete.com/projects/xdotool/ to download it for your platform. \n\e[0m" >&2
     exit 1
 fi
 
@@ -22,8 +22,9 @@ url=""
 #get_pages_number=false # CUSTOM VARIABLE (USED AT END)
 
 function print_usage() {
+    printf "\e[35m" # Make all magenta
     printf "\n%s: Open the given url in a browser tab/window, perform 'Save As' operation and close the tab/window.\n\n" "${scriptname}" >&2
-    printf "USAGE:\n   %s URL [OPTIONS]\n\n" "${scriptname}" >&2
+    printf "USAGE:\n  %s URL [OPTIONS]\n\n" "${scriptname}" >&2
     printf "URL                      The url of the web page to be saved.\n\n" >&2
     printf "options:\n" >&2
     printf "  -d, --destination      Destination path. If a directory, then file is saved with default name inside the directory, else assumed to be full path of target file. Default = '%s'\n" "${destination}" >&2
@@ -33,6 +34,7 @@ function print_usage() {
     printf "  --save-wait-time       Number of seconds to wait for the page to be saved (i.e., seconds to sleep before Ctrl+F4 is 'pressed'). Default = %s\n" "${save_wait_time}" >&2
     #printf "  --get-pages-number     Scrape the number of pages of listings from the clue url just retrieved and save it to a text file. Default = %s\n" "${get_pages_number}" >&2
     printf "  -h, --help             Display this help message and exit.\n" >&2
+    printf "\e[0m" # Return to black text
 }
 
 while [ "$#" -gt 0 ]
@@ -74,12 +76,12 @@ do
         #    shift
         #    ;;
         -*)
-            printf "SAVE-AS: ERROR: Unknown option: %s\n" "${1}">&2
+            printf "\e[31mERROR: Unknown option:%s\n\e[0m" "${1}">&2
             print_usage
             exit 1
             ;;
         *)  if [ ! -z "$url" ]; then
-                printf "SAVE-AS: ERROR: Expected exactly one positional argument (URL) to be present, but encountered a second one ('%s').\n\n" "${1}" >&2
+                printf "\e[31mERROR: Expected exactly one positional argument (URL) to be present, but encountered a second one ('%s').\n\n\e[0m" "${1}" >&2
                 print_usage
                 exit 1
             fi
@@ -102,42 +104,42 @@ function has_non_printable_or_non_ascii() {
 
 function validate_input() {
     if [[ -z "${url}" ]]; then
-        printf "SAVE-AS: ERROR: URL must be specified." >&2
+        printf "\e[31mERROR: URL must be specified. \e[0m" >&2
         print_usage
         exit 1
     fi
 
     if [[ -d "${destination}" ]]; then
-        printf "SAVE-AS: INFO: The specified destination ('%s') is a directory path, will save file inside it with the default name.\n" "${destination}">&2
+        printf "The specified destination ('%s') is a directory path, will save file inside it with the default name.\n" "${destination}">&2
     else
         local basedir="$(dirname "${destination}")"
         if [[ ! -d "${basedir}" ]]; then
-            printf "SAVE-AS: ERROR: Directory '%s' does not exist - Will NOT continue.\n" "${basedir}" >&2
+            printf "\e[31mERROR: Directory '%s' does not exist - Will NOT continue.\n\e[0m" "${basedir}" >&2
             exit 1
         fi
     fi
     destination="$(readlink -f "$destination")"  # Ensure absolute path
 
     if [[ "${browser}" != "google-chrome" && "${browser}" != "chromium-browser" && "${browser}" != "firefox" ]]; then
-        printf "SAVE-AS: ERROR: Browser (%s) is not supported, must be one of 'google-chrome', 'chromium-browser' or 'firefox'.\n" "${browser}" >&2
+        printf "\e[31mERROR: Browser (%s) is not supported, must be one of 'google-chrome', 'chromium-browser' or 'firefox'.\n\e[0m" "${browser}" >&2
         exit 1
     fi
 
     if ! command -v "${browser}" &>/dev/null; then
-        printf "SAVE-AS: ERROR: Command '${browser}' not found. Make sure it is installed, and in path.\n" >&2
+        printf "\e[31mERROR: Command '${browser}' not found. Make sure it is installed, and in path.\n\e[0m" >&2
         exit 1
     fi
 
     local num_regexp='^.[0-9]+$|^[0-9]+$|^[0-9]+.[0-9]+$'  # Matches a valid number (in decimal notation)
     if [[ ! "${load_wait_time}" =~ $num_regexp || ! "${save_wait_time}" =~ $num_regexp ]]; then
-        printf "SAVE-AS: ERROR: --load-wait-time (='%s'), and --save_wait_time(='%s') must be valid numbers.\n" "${load_wait_time}" "${load_wait_time}" >&2
+        printf "\e[31mERROR: --load-wait-time (='%s'), and --save_wait_time(='%s') must be valid numbers.\n\e[0m" "${load_wait_time}" "${load_wait_time}" >&2
         exit 1
     fi
 
     if [[ $(has_non_printable_or_non_ascii "${destination}") -eq 1 || $(has_non_printable_or_non_ascii "${suffix}") -eq 1 ]]; then
-        printf "SAVE-AS: ERROR: Either --destination ('%s') or --suffix ('%s') contains a non ascii or non-printable ascii character(s). " "${destination}" "${suffix}" >&2
+        printf "\e[31mERROR: Either --destination ('%s') or --suffix ('%s') contains a non ascii or non-printable ascii character(s). " "${destination}" "${suffix}" >&2
         printf "'xdotool' does not mingle well with non-ascii characters (https://code.google.com/p/semicomplete/issues/detail?id=14).\n\n" >&2
-        printf '!!!! Will NOT proceed !!!!\n' >&2
+        printf '\e[1m!!!! Will NOT proceed !!!!\n\e[0m' >&2
         exit 1
     fi
 }
@@ -152,7 +154,7 @@ sleep ${load_wait_time}
 browser_wid="$(xdotool search --sync --onlyvisible --class "${browser}" | head -n 1)"
 wid_re='^[0-9]+$'  # window-id must be a valid integer
 if [[ ! "${browser_wid}" =~ ${wid_re} ]]; then
-    printf "SAVE-AS: ERROR: Unable to find X-server window id for browser.\n" >&2
+    printf "\e[31mERROR: Unable to find X-server window id for browser.\n\e[0m" >&2
     exit 1
 fi
 
@@ -170,7 +172,7 @@ fi
 # Find window id for the "Save file" dialog box
 savefile_wid="$(xdotool search --name "$savefile_dialog_title" | head -n 1)"
 if [[ ! "${savefile_wid}" =~ ${wid_re}  ]]; then
-    printf "SAVE-AS: ERROR: Unable to find window id for 'Save File' Dialog.\n" >&2
+    printf "\e[31mERROR: Unable to find window id for 'Save File' Dialog.\n\e[0m" >&2
     exit 1
 fi
 
@@ -197,7 +199,7 @@ if [[ ! -z "${suffix}" ]]; then
     # but this is the only fix I can think for this special case right now. Of course it's easy to tweak the number of
     # Left key moves you need if you know your file types in advance.
     if [[ "${is_kde}" -eq 1 ]]; then
-        printf "SAVE-AS: INFO: Desktop session is found to be '${DESKTOP_SESSION}', hence the full file name will be highlighted. " >&2
+        printf "Desktop session is found to be '${DESKTOP_SESSION}', hence the full file name will be highlighted. " >&2
         printf "Assuming extension .html to move back 5 character left before adding suffix (change accordingly if you need to).\n" >&2
         xdotool windowactivate "${savefile_wid}" key --delay 40 --clearmodifier End Left Left Left Left Left
     else
@@ -227,17 +229,17 @@ if [[ ! -z "${destination}" ]]; then
 fi
 xdotool windowactivate "${savefile_wid}" key --delay 20 --clearmodifiers Return
 
-printf "SAVE-AS: INFO: Saving web page ...\n" >&2
+printf "\e[33mSaving web page...\e[0m" >&2
 
 # Wait for the file to be completely saved
 sleep ${save_wait_time}
-printf "SAVE-AS: INFO: Saved.\n">&2
+printf "\e[32m Done.\n\e[0m">&2
 
 # Get number of pages of results with this clue
 #if [ "$get_pages_number" = true ]
-if [ "$(cat ~/Documents/Newscrape/Binaries/pagesnumber.txt)" = "-1" ]
+if [ "$(cat home/webscraper/Documents/Newscrape/Binaries/pagesnumber.txt)" = "-1" ]
 then
-    printf "SAVE-AS: INFO: Getting number of results...\n" >&2
+    printf "\e[33mGetting number of results...\e[0m" >&2
     sleep 1s #
     xdotool key --clearmodifiers F12
     sleep 5s #
@@ -268,9 +270,9 @@ then
     pagesnumber=$(python -c "from math import ceil; print int(ceil($resultsnumber/35))")
 
     # Paste to fresh file
-    rm ~/Documents/Newscrape/Binaries/pagesnumber.txt
-    echo $pagesnumber >> ~/Documents/Newscrape/Binaries/pagesnumber.txt
-    printf "SAVE-AS: INFO: Got number of results.\n">&2
+    rm home/webscraper/Documents/Newscrape/Binaries/pagesnumber.txt
+    echo $pagesnumber >> home/webscraper/Documents/Newscrape/Binaries/pagesnumber.txt
+    printf "\e[32m Done.\n\e[0m">&2
 fi
 
 # Close the browser tab/window (Ctrl+w for KDE, Ctrl+F4 otherwise)
@@ -280,4 +282,4 @@ else
     xdotool windowactivate "${browser_wid}" key --clearmodifiers "ctrl+F4"
 fi
 
-printf "SAVE-AS: INFO: Done!\n">&2
+#printf "\e[32mDone!\n\e[0m">&2
