@@ -237,7 +237,7 @@ printf "\e[32m Done.\n\e[0m">&2
 
 # Get number of pages of results with this clue
 #if [ "$get_pages_number" = true ]
-if [ "$(cat home/webscraper/Documents/Newscrape/Binaries/pagesnumber.txt)" = "-1" ]
+if [ "$(cat ~/Documents/Newscrape/Binaries/pagesnumber.txt)" = "-1" ]
 then
     printf "\e[33mGetting number of results...\e[0m" >&2
     sleep 1s #
@@ -267,11 +267,11 @@ then
     resultsnumber=$(echo $resultshtml| cut -d'>' -f 2)
     resultsnumber=$(echo $resultsnumber| cut -d' ' -f 1)
     # Do the math
-    pagesnumber=$(python -c "from math import ceil; print int(ceil($resultsnumber/35))")
+    pagesnumber=$(python -c "from math import ceil; print int(ceil($resultsnumber/35.0))")
 
     # Paste to fresh file
-    rm home/webscraper/Documents/Newscrape/Binaries/pagesnumber.txt
-    echo $pagesnumber >> home/webscraper/Documents/Newscrape/Binaries/pagesnumber.txt
+    rm ~/Documents/Newscrape/Binaries/pagesnumber.txt
+    echo $pagesnumber >> ~/Documents/Newscrape/Binaries/pagesnumber.txt
     printf "\e[32m Done.\n\e[0m">&2
 fi
 
