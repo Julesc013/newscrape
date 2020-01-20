@@ -6,8 +6,8 @@
 printf "\e[33mSaving all pages...\n\e[0m">&2
 
 # Declare universal variables.
-loadwait=12
-savewait=4
+loadwait=6
+savewait=2
 browser="firefox"
 
 #pagesmax=6 # Put this into the pagesnumber text file before it is populated with an actual result.
@@ -51,7 +51,7 @@ do
       while [ "$page" -le "$pagesnumber" -o "$pagesnumber" = "-1" ]
       do
 
-         printf "\e[33mGetting '${clue}-NSW-${suburb}-${page}'...\n\e[0m">&2
+         printf "\e[33;2mGetting '${clue}-NSW-${suburb}-${page}'...\n\e[0m">&2
 
          # Construct URL
          address="${addressbase[0]}${clue}${addressbase[1]}${page}${addressbase[2]}NSW${addressbase[3]}${suburb}+NSW"
@@ -78,3 +78,5 @@ do
    done
 
 done
+
+printf "\e[32mSaved all pages.\n\e[0m">&2

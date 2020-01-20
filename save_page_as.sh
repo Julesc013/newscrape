@@ -246,7 +246,7 @@ then
     xdotool key --clearmodifiers Tab
     sleep 1s #
     xdotool type --delay 50 --clearmodifiers "cell search-message first-cell"
-    sleep 3s #
+    sleep 2s #
     xdotool key --clearmodifiers Return
     sleep 1s #
     xdotool key  --clearmodifiers Tab
