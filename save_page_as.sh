@@ -267,7 +267,12 @@ then
     resultsnumber=$(echo $resultshtml| cut -d'>' -f 2)
     resultsnumber=$(echo $resultsnumber| cut -d' ' -f 1)
     # Do the math
-    pagesnumber=$(python -c "from math import ceil; print int(ceil($resultsnumber/35.0))")
+    if [ "$resultsnumber" -ge 1 -a "$resultsnumber" -le 30 ]
+    then
+        pagesnumber=$(python -c "from math import ceil; print int(ceil($resultsnumber/35.0))")
+    else
+        resultsnumber=-1;
+    fi
 
     # Paste to fresh file
     rm ~/Documents/Newscrape/Binaries/pagesnumber.txt
