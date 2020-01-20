@@ -117,8 +117,19 @@ do
 
                # Update this number after the first scrape of each new suburb.
                #pagesnumber=$(cat ~/Documents/Newscrape/Binaries/pagesnumber.txt)
-               linenumber=$(grep -n "cell search-message first-cell" ${filename}.html)
-               
+
+               linenumber=$(grep -n "cell search-message first-cell" ${filename}.html | cut -d: -f1)
+               resultshtml=$(sed "$(($linenumber + 1))q;d" ${filename}.html)
+               # Get integer substring
+               resultsnumber=$(echo $resultshtml| cut -d'>' -f 2)
+               resultsnumber=$(echo $resultsnumber| cut -d' ' -f 1)
+               # Do the math
+               if [ "$resultsnumber" -ge 1 -a "$resultsnumber" -le 1000 ]
+               then
+                  pagesnumber=$(python -c "from math import ceil; print int(ceil($resultsnumber/35.0))")
+               else
+                  resultsnumber=-1;
+               fi
 
             fi
 
