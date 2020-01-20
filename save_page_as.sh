@@ -267,7 +267,7 @@ then
     resultsnumber=$(echo $resultshtml| cut -d'>' -f 2)
     resultsnumber=$(echo $resultsnumber| cut -d' ' -f 1)
     # Do the math
-    if [ "$resultsnumber" -ge 1 -a "$resultsnumber" -le 30 ]
+    if [ "$resultsnumber" -ge 1 -a "$resultsnumber" -le 1000 ]
     then
         pagesnumber=$(python -c "from math import ceil; print int(ceil($resultsnumber/35.0))")
     else

@@ -11,7 +11,7 @@ savewait=2
 browser="firefox"
 
 #pagesmax=6 # Put this into the pagesnumber text file before it is populated with an actual result.
-pagesnumber = -1 #initial setting
+pagesnumber=-1 #initial setting
 
 declare -a addressbase=("https://www.yellowpages.com.au/search/listings?clue=" "&eventType=pagination&openNow=false&pageNumber=" "&referredBy=UNKNOWN&&state=" "&suburb=" "+") # [0], clue, [1], page, [2] state, [3] suburb+state
 directory="/home/webscraper/Documents/Newscrape/Pages/" # then add "filename.html"
