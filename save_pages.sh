@@ -3,13 +3,12 @@
 # https://github.com/abiyani/automate-save-page-as
 
 
-printf "\e[33mSaving all pages...\n\e[0m">&2
-
 # Declare universal variables.
 loadwait=6
 savewait=2
 browser="firefox"
 
+resume=false
 #pagesmax=6 # Put this into the pagesnumber text file before it is populated with an actual result.
 pagesnumber=-1 #initial setting
 
@@ -31,10 +30,49 @@ declare -a suburbsACT=('Fyshwick' 'Mitchell' 'Canberra' 'Belconnen' 'Kambah' 'Ho
 declare -a suburbsNT=('Winnellie' 'Berrimah' 'Ciccone' 'Humpty+Doo' 'Darwin' 'Yarrawonga' 'Howard+Springs' 'Palmerston+City' 'Holtze' 'Alice+Springs' 'Larrakeyah' 'Katherine' 'Leanyer' 'Pinelands' 'Coconut+Grove' 'Katherine+East' 'Tennant+Creek' 'Stuart+Park' 'Virginia' 'Woolner' 'Moulden' 'Nightcliff' 'Anula' 'Araluen' 'Bees+Creek' 'Girraween' 'Herbert' 'Jabiru' 'Katherine+South' 'Marlow+Lagoon' 'Nhulunbuy' 'Noonamah' 'Wanguri' 'Wulagi' 'Bakewell' 'Berry+Springs' 'Borroloola' 'Brinkin' 'Casuarina' 'Durack' 'Farrar' 'Gillen' 'Gunn' 'Hudson' 'Knuckey+Lagoon' 'Malak' 'Rapid+Creek' 'Rosebery' 'Uralla' 'Woodroffe' 'Yulara' 'Adelaide+River' 'Alyangula' 'Angurugu' 'Banyo' 'Batchelor' 'Bayview' 'Bellamack' 'Beswick' 'Braitling' 'Coonawarra' 'Daly' 'Darwin+River' 'Driver' 'Dundee+Beach' 'Dundee+Downs' 'Gray' 'Ilparpa' 'Jingili' 'Kilgariff' 'Larapinta' 'Livingstone' 'Lloyd+Creek' 'Ludmilla' 'Marrara' 'Mcminns+Lagoon' 'Millner' 'Moil' 'Nakara' 'Nicholson' 'Parap' 'Pine+Creek' 'Tindal' 'Tiwi')
 
 
+
+# Check/get command line arguments
+while [ "$#" -gt 0 ]
+do
+    case "$1" in
+        -r | --resume)
+            shift;
+            resume=true
+            shift
+            ;;
+        -h | --help)
+            print_usage
+            exit 0
+            ;;
+        -*)
+            printf "\e[31mERROR: Unknown option:%s\n\e[0m" "${1}">&2
+            print_usage
+            exit 1
+            ;;
+    esac
+done
+
+function print_usage() {
+    printf "\e[35m" # Make all magenta
+    printf "\n%s: Open a series of web pages and save their raw HTML to files.\n\n" "$(basename "$0")" >&2
+    printf "options:\n" >&2
+    printf "  -r, --resume      Do not erase previously downloaded files before starting. Any webpages already downloaded will be skipped. Default = '%s'\n" "${resume}" >&2
+    printf "  -h, --help             Display this help message and exit.\n" >&2
+    printf "\e[0m" # Return to black text
+}
+
+
+printf "\e[33mSaving pages...\n\e[0m">&2
+
 # Remove existing pages (from the last scrape)
-printf "\e[33mRemoving existing pages...\e[0m">&2
-rm ~/Documents/Newscrape/Pages/*
-printf "\e[32m Done.\n\e[0m">&2
+if [ "$1" = "-r" ]
+then
+   printf "\e[33mRemoving existing pages...\e[0m">&2
+   rm ~/Documents/Newscrape/Pages/*
+   printf "\e[32m Done.\n\e[0m">&2
+else
+   printf "\e[31mSkipped existing page removal.\e[0m">&2
+fi
 
 # Loop through clues
 for clue in "${clues[@]}"
@@ -47,8 +85,9 @@ do
    do
 
       # For each suburb, reset the pages number file.
-      rm ~/Documents/Newscrape/Binaries/pagesnumber.txt
-      echo "-1" >> ~/Documents/Newscrape/Binaries/pagesnumber.txt
+      #rm ~/Documents/Newscrape/Binaries/pagesnumber.txt
+      #echo "-1" >> ~/Documents/Newscrape/Binaries/pagesnumber.txt
+      pagesnumber=-1
       
 
       # Loop through pages
@@ -59,12 +98,16 @@ do
          while [ "$page" -le "$pagesnumber" -o "$pagesnumber" = "-1" ]
          do
 
-            printf "\e[33;2mGetting '${clue}-NSW-${suburb}-${page}'...\n\e[0m">&2
+            filename="${clue}-NSW-${suburb}-${page}"
+
+            printf "\e[33;2mGetting $filename...\n\e[0m">&2
 
             # Construct URL
             address="${addressbase[0]}${clue}${addressbase[1]}${page}${addressbase[2]}NSW${addressbase[3]}${suburb}+NSW"
-            destination="${directory}/${clue}-NSW-${suburb}-${page}.html"
+            destination="${directory}/${filename}.html"
 
+            # Only get if resume is false or the file doesn't exist.
+            if
             # Get the first page (and get the number of pages if required).
             ./save_page_as.sh $address "--browser" $browser "--destination" $destination --load-wait-time $loadwait --save-wait-time $savewait
 
@@ -73,7 +116,9 @@ do
             then
 
                # Update this number after the first scrape of each new suburb.
-               pagesnumber=$(cat ~/Documents/Newscrape/Binaries/pagesnumber.txt) 
+               #pagesnumber=$(cat ~/Documents/Newscrape/Binaries/pagesnumber.txt)
+               linenumber=$(grep -n "cell search-message first-cell" ${filename}.html)
+               
 
             fi
 

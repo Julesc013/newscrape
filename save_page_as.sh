@@ -237,48 +237,48 @@ printf "\e[32m Done.\n\e[0m">&2
 
 # Get number of pages of results with this clue
 #if [ "$get_pages_number" = true ]
-if [ "$(cat ~/Documents/Newscrape/Binaries/pagesnumber.txt)" = "-1" ]
-then
-    printf "\e[33mGetting number of results...\e[0m" >&2
-    sleep 1s #
-    xdotool key --clearmodifiers F12
-    sleep 5s #
-    xdotool key --clearmodifiers Tab
-    sleep 1s #
-    xdotool type --delay 50 --clearmodifiers "cell search-message first-cell"
-    sleep 2s #
-    xdotool key --clearmodifiers Return
-    sleep 1s #
-    xdotool key  --clearmodifiers Tab
-    sleep 1s #
-    xdotool key --clearmodifiers Tab
-    sleep 1s #
-    xdotool key --clearmodifiers Tab
-    sleep 1s #
-    xdotool key --clearmodifiers Right
-    sleep 1s #
-    xdotool key --clearmodifiers Down
-    sleep 1s #
-    xdotool key --clearmodifiers "ctrl+c"
+#if [ "$(cat ~/Documents/Newscrape/Binaries/pagesnumber.txt)" = "-1" ]
+#then
+#    printf "\e[33mGetting number of results...\e[0m" >&2
+#    sleep 1s #
+#    xdotool key --clearmodifiers F12
+#    sleep 5s #
+#    xdotool key --clearmodifiers Tab
+#    sleep 1s #
+#    xdotool type --delay 50 --clearmodifiers "cell search-message first-cell"
+#    sleep 2s #
+#    xdotool key --clearmodifiers Return
+#    sleep 1s #
+#    xdotool key  --clearmodifiers Tab
+#    sleep 1s #
+#    xdotool key --clearmodifiers Tab
+#    sleep 1s #
+#    xdotool key --clearmodifiers Tab
+#    sleep 1s #
+#    xdotool key --clearmodifiers Right
+#    sleep 1s #
+#    xdotool key --clearmodifiers Down
+#    sleep 1s #
+#    xdotool key --clearmodifiers "ctrl+c"
 
-    # Process number
-    resultshtml=$(xclip -out -selection clipboard)
-    # Get integer substring
-    resultsnumber=$(echo $resultshtml| cut -d'>' -f 2)
-    resultsnumber=$(echo $resultsnumber| cut -d' ' -f 1)
-    # Do the math
-    if [ "$resultsnumber" -ge 1 -a "$resultsnumber" -le 1000 ]
-    then
-        pagesnumber=$(python -c "from math import ceil; print int(ceil($resultsnumber/35.0))")
-    else
-        resultsnumber=-1;
-    fi
-
-    # Paste to fresh file
-    rm ~/Documents/Newscrape/Binaries/pagesnumber.txt
-    echo $pagesnumber >> ~/Documents/Newscrape/Binaries/pagesnumber.txt
-    printf "\e[32m Done.\n\e[0m">&2
-fi
+#    # Process number
+#    resultshtml=$(xclip -out -selection clipboard)
+#    # Get integer substring
+#    resultsnumber=$(echo $resultshtml| cut -d'>' -f 2)
+#    resultsnumber=$(echo $resultsnumber| cut -d' ' -f 1)
+#    # Do the math
+#    if [ "$resultsnumber" -ge 1 -a "$resultsnumber" -le 1000 ]
+#    then
+#        pagesnumber=$(python -c "from math import ceil; print int(ceil($resultsnumber/35.0))")
+#    else
+#        resultsnumber=-1;
+#    fi
+#
+#    # Paste to fresh file
+#    rm ~/Documents/Newscrape/Binaries/pagesnumber.txt
+#    echo $pagesnumber >> ~/Documents/Newscrape/Binaries/pagesnumber.txt
+#    printf "\e[32m Done.\n\e[0m">&2
+#fi
 
 # Close the browser tab/window (Ctrl+w for KDE, Ctrl+F4 otherwise)
 if [[ "${is_kde}" -eq 1 ]]; then
