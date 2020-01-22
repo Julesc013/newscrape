@@ -23,24 +23,24 @@ def search_data(sheet, column, text): # Search the existing data for matches... 
 
 # Define variables
 
-results_path = "/home/webscraper/Documents/Newscrape/Results/"
-all_path = results_path & "all_results.xlsx"
-new_path = results_path & "new_results.xlsx"
-template_path = results_path & "new_results_template.xlsx"
+results_path = r"/home/webscraper/Documents/Newscrape/Results/"
+all_path = results_path + "all_results.xlsx"
+new_path = results_path + "new_results.xlsx"
+template_path = results_path + "new_results_template.xlsx"
+
+
+# Make a fresh copy of the new-results template for editing.
+copyfile(template_path, new_path)
 
 
 # Load worksheets
 
-book_all = load_workbook(all_path) # Load the workbook
+book_all = load_workbook(filename = all_path) # Load the workbook
 sheet_all = book_all['Sheet1'] # Load the worksheet
 
-book_new = load_workbook(new_path) # Load the workbook
+book_new = load_workbook(filename = new_path) # Load the workbook
 sheet_new = book_new['Sheet1'] # Load the worksheet
 
-
-# CODE STARTS ACTUALLY DOING STUFF FROM HERE
-
-copyfile(template_path, new_path) # Make a fresh copy of the new-results template for editing.
 
 
 pages_path = os.fsencode("/home/webscraper/Documents/Newscrape/Pages/") # Get the directory thing
@@ -58,10 +58,10 @@ for page_file in os.listdir(pages_path):
 
     for results in listings:
 
-        # For each business on this page, gather do the thing with their data
+        # For each business on this page, gather their data and check if they have already been identified.
 
         XPATH_BUSINESS_NAME = ".//a[@class='listing-name']//text()" 
-        XPATH_BUSSINESS_PAGE = ".//a[@class='listing-name']//@href" 
+        ##XPATH_BUSSINESS_PAGE = ".//a[@class='listing-name']//@href" 
         XPATH_TELEPHONE = ".//a[@class='click-to-call contact contact-preferred contact-phone']//@href"
         XPATH_ADDRESS = ".//a[@class='contact contact-main contact-email']//@data-email"
         XPATH_LOCATION = ".//p[@class='listing-address mappable-address']//text()"
@@ -76,7 +76,7 @@ for page_file in os.listdir(pages_path):
 
         raw_business_name = results.xpath(XPATH_BUSINESS_NAME)
         raw_business_telephone = results.xpath(XPATH_TELEPHONE)	
-        raw_business_page = results.xpath(XPATH_BUSSINESS_PAGE)
+        ##raw_business_page = results.xpath(XPATH_BUSSINESS_PAGE)
         #raw_categories = results.xpath(XPATH_CATEGORIES)
         raw_website = results.xpath(XPATH_WEBSITE)
         #raw_rating = results.xpath(XPATH_RATING)
@@ -91,7 +91,7 @@ for page_file in os.listdir(pages_path):
         
         business_name = ''.join(raw_business_name).strip() if raw_business_name else None
         telephone = ''.join(raw_business_telephone).strip() if raw_business_telephone else None
-        business_page = ''.join(raw_business_page).strip() if raw_business_page else None
+        ##business_page = ''.join(raw_business_page).strip() if raw_business_page else None
         #rank = ''.join(raw_rank).replace('.\xa0','') if raw_rank else None
         #category = ','.join(raw_categories).strip() if raw_categories else None
         website = ''.join(raw_website).strip() if raw_website else None
@@ -104,21 +104,8 @@ for page_file in os.listdir(pages_path):
         location = ''.join(raw_location).strip() if raw_location else None
 
 
-        business_details = {
-                            'business_name':business_name,
-                            'telephone':telephone,
-                            'business_page':business_page,
-                            #'rank':rank,
-                            #'category':category,
-                            'website':website,
-                            #'rating':rating,
-                            #'street':street,
-                            #'locality':locality,
-                            #'region':region,
-                            #'zipcode':zipcode,
-                            #'listing_url':response.url
-                            'address':address,
-                            'location':location
-        }
+        # Check if this business listing exists
 
-        scraped_results.append(business_details)
+
+        #TEST PRINT
+        print(business_name, telephone, address, location, website)
