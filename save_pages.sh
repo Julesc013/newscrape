@@ -71,7 +71,7 @@ then
    rm ~/Documents/Newscrape/Pages/*
    printf "\e[32m Done.\n\e[0m">&2
 else
-   printf "\e[31mSkipped existing page removal.\e[0m">&2
+   printf "\e[31mSkipped existing page removal.\n\e[0m">&2
 fi
 
 # Loop through clues
@@ -93,53 +93,52 @@ do
       # Loop through pages
 
       page=1 # Page number counter
-      while [ "$page" -le 30 ] # 30 is the max limit, if you reach this just move on.
+      # Download the url if the current page is within the range of all pages OR is undefined yet AND less than 30 (which is the max pages limit).
+      while [[ ( "$page" -le "$pagesnumber" || "$pagesnumber" = "-1" ) && "$page" -le 30 ]]
       do
-         while [ "$page" -le "$pagesnumber" -o "$pagesnumber" = "-1" ]
-         do
 
-            filename="${clue}-NSW-${suburb}-${page}"
+         filename="${clue}-NSW-${suburb}-${page}"
 
-            printf "\e[33;2mGetting $filename...\n\e[0m">&2
+         printf "\e[33;2mGetting $filename...\n\e[0m">&2
 
-            # Construct URL
-            address="${addressbase[0]}${clue}${addressbase[1]}${page}${addressbase[2]}NSW${addressbase[3]}${suburb}+NSW"
-            destination="${directory}/${filename}.html"
+         # Construct URL
+         address="${addressbase[0]}${clue}${addressbase[1]}${page}${addressbase[2]}NSW${addressbase[3]}${suburb}+NSW"
+         destination="${directory}${filename}.html"
 
-            # Only get if $resume is false or the file doesn't exist.
-            if [ "$resume" = false -o ! -f $destination ]
+         # Only get if $resume is false or the file doesn't exist.
+         if [ "$resume" = false -o ! -e "$destination" ]
+         then
+            # Get the first page (and get the number of pages if required).
+            ./save_page_as.sh $address "--browser" $browser "--destination" $destination --load-wait-time $loadwait --save-wait-time $savewait
+         fi
+
+         # If the number of pages hasn't been retrieved already, retrieve it.
+         if [ "$pagesnumber" = "-1" ]
+         then
+
+            # Update this number after the first scrape of each new suburb.
+            #pagesnumber=$(cat ~/Documents/Newscrape/Binaries/pagesnumber.txt)
+
+            linenumber=$(grep -n "cell search-message first-cell" ${destination} | cut -d: -f1)
+            resultshtml=$(sed "$(($linenumber + 1))q;d" ${destination})
+            # Get integer substring
+            resultsnumber=$(echo $resultshtml| cut -d'>' -f 2)
+            resultsnumber=$(echo $resultsnumber| cut -d' ' -f 1)
+
+            # Do the math
+            if [ "$resultsnumber" -ge 1 -a "$resultsnumber" -le 1500 ]
             then
-               # Get the first page (and get the number of pages if required).
-               ./save_page_as.sh $address "--browser" $browser "--destination" $destination --load-wait-time $loadwait --save-wait-time $savewait
+               pagesnumber=$(python -c "from math import ceil; print int(ceil($resultsnumber/35.0))")
+            else
+               resultsnumber=-1
             fi
 
-            # If the number of pages hasn't been retrieved already, retrieve it.
-            if [ "$pagesnumber" = "-1" ]
-            then
+         fi
 
-               # Update this number after the first scrape of each new suburb.
-               #pagesnumber=$(cat ~/Documents/Newscrape/Binaries/pagesnumber.txt)
+         ((page++)) # Increment page counter.
 
-               linenumber=$(grep -n "cell search-message first-cell" ${filename}.html | cut -d: -f1)
-               resultshtml=$(sed "$(($linenumber + 1))q;d" ${filename}.html)
-               # Get integer substring
-               resultsnumber=$(echo $resultshtml| cut -d'>' -f 2)
-               resultsnumber=$(echo $resultsnumber| cut -d' ' -f 1)
-               # Do the math
-               if [ "$resultsnumber" -ge 1 -a "$resultsnumber" -le 1500 ]
-               then
-                  pagesnumber=$(python -c "from math import ceil; print int(ceil($resultsnumber/35.0))")
-               else
-                  resultsnumber=-1
-               fi
+         #printf "\e[32mSaved.\n\e[0m">&2
 
-            fi
-
-            ((page++)) # Increment page counter.
-
-            #printf "\e[32mSaved.\n\e[0m">&2
-
-         done
       done
 
    done
