@@ -30,10 +30,17 @@ template_path = results_path + "new_results_template.xlsx"
 
 
 # Make a fresh copy of the new-results template for editing.
+
+print("Copying spreadsheet template...", end="")
+
 copyfile(template_path, new_path)
+
+print(" Done.")
 
 
 # Load worksheets
+
+print("Loading worksheets...", end="")
 
 book_all = load_workbook(filename = all_path) # Load the workbook
 sheet_all = book_all['Sheet1'] # Load the worksheet
@@ -41,13 +48,15 @@ sheet_all = book_all['Sheet1'] # Load the worksheet
 book_new = load_workbook(filename = new_path) # Load the workbook
 sheet_new = book_new['Sheet1'] # Load the worksheet
 
+print(" Done.")
 
 
 pages_path = os.fsencode("/home/webscraper/Documents/Newscrape/Pages/") # Get the directory thing
 for page_file in os.listdir(pages_path):
 
     page_path = os.fsdecode(page_file)
-    parser = html.fromstring(page_path.text)
+    print("Parsing " + page_path + "...") # DEBUG
+    parser = html.fromstring(page_path) #page_path.text
 
     # Make links absolute
     base_url = "https://www.yellowpages.com.au"
