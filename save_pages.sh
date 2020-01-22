@@ -45,7 +45,7 @@ do
             exit 0
             ;;
         -*)
-            printf "\e[31mERROR: Unknown option:%s\n\e[0m" "${1}">&2
+            printf "\e[31mUnknown option:%s\n\e[0m" "${1}">&2
             print_usage
             exit 1
             ;;
@@ -56,8 +56,8 @@ function print_usage() {
     printf "\e[35m" # Make all magenta
     printf "\n%s: Open a series of web pages and save their raw HTML to files.\n\n" "$(basename "$0")" >&2
     printf "options:\n" >&2
-    printf "  -r, --resume      Do not erase previously downloaded files before starting. Any webpages already downloaded will be skipped. Default = '%s'\n" "${resume}" >&2
-    printf "  -h, --help             Display this help message and exit.\n" >&2
+    printf "  -r, --resume    Do not erase previously downloaded files before starting. Any webpages already downloaded will be skipped. Default = '%s'\n" "${resume}" >&2
+    printf "  -h, --help      Display this help message and exit.\n" >&2
     printf "\e[0m" # Return to black text
 }
 
@@ -65,7 +65,7 @@ function print_usage() {
 printf "\e[33mSaving pages...\n\e[0m">&2
 
 # Remove existing pages (from the last scrape)
-if [ "$1" = "-r" ]
+if [ "$resume" = false ]
 then
    printf "\e[33mRemoving existing pages...\e[0m">&2
    rm ~/Documents/Newscrape/Pages/*
@@ -106,10 +106,12 @@ do
             address="${addressbase[0]}${clue}${addressbase[1]}${page}${addressbase[2]}NSW${addressbase[3]}${suburb}+NSW"
             destination="${directory}/${filename}.html"
 
-            # Only get if resume is false or the file doesn't exist.
-            if
-            # Get the first page (and get the number of pages if required).
-            ./save_page_as.sh $address "--browser" $browser "--destination" $destination --load-wait-time $loadwait --save-wait-time $savewait
+            # Only get if $resume is false or the file doesn't exist.
+            if [ "$resume" = false -o ! -f $destination ]
+            then
+               # Get the first page (and get the number of pages if required).
+               ./save_page_as.sh $address "--browser" $browser "--destination" $destination --load-wait-time $loadwait --save-wait-time $savewait
+            fi
 
             # If the number of pages hasn't been retrieved already, retrieve it.
             if [ "$pagesnumber" = "-1" ]
@@ -124,11 +126,11 @@ do
                resultsnumber=$(echo $resultshtml| cut -d'>' -f 2)
                resultsnumber=$(echo $resultsnumber| cut -d' ' -f 1)
                # Do the math
-               if [ "$resultsnumber" -ge 1 -a "$resultsnumber" -le 1000 ]
+               if [ "$resultsnumber" -ge 1 -a "$resultsnumber" -le 1500 ]
                then
                   pagesnumber=$(python -c "from math import ceil; print int(ceil($resultsnumber/35.0))")
                else
-                  resultsnumber=-1;
+                  resultsnumber=-1
                fi
 
             fi
