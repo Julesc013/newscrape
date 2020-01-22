@@ -1,0 +1,124 @@
+import os
+from shutil import copyfile
+from openpyxl import Workbook
+from openpyxl import load_workbook,styles
+import requests
+from lxml import html
+import unicodecsv as csv
+import argparse
+
+
+
+def search_data(sheet, column, text): # Search the existing data for matches... if found, don't count this as a new listing # Sheet must be an Excel worksheet, Column should be in set {A,B,C,D} and Text should be alphanumeric.
+
+    # Get all cells from specified column
+    for cell in sheet[column]:
+        if(cell.value is not None): # We need to check that the cell is not empty
+            if text in cell.value: # Check if the value of the cell contains the text of the business phone number
+                return True # return true then break out of this function
+    
+    return False # Else (if none found) return false
+
+
+
+# Define variables
+
+results_path = "/home/webscraper/Documents/Newscrape/Results/"
+all_path = results_path & "all_results.xlsx"
+new_path = results_path & "new_results.xlsx"
+template_path = results_path & "new_results_template.xlsx"
+
+
+# Load worksheets
+
+book_all = load_workbook(all_path) # Load the workbook
+sheet_all = book_all['Sheet1'] # Load the worksheet
+
+book_new = load_workbook(new_path) # Load the workbook
+sheet_new = book_new['Sheet1'] # Load the worksheet
+
+
+# CODE STARTS ACTUALLY DOING STUFF FROM HERE
+
+copyfile(template_path, new_path) # Make a fresh copy of the new-results template for editing.
+
+
+pages_path = os.fsencode("/home/webscraper/Documents/Newscrape/Pages/") # Get the directory thing
+for page_file in os.listdir(pages_path):
+
+    page_path = os.fsdecode(page_file)
+    parser = html.fromstring(page_path.text)
+
+    # Make links absolute
+    base_url = "https://www.yellowpages.com.au"
+    parser.make_links_absolute(base_url)
+
+    XPATH_LISTINGS = "//div[@class='search-results search-results-data listing-group']" # Get the class containing all the listings from this page
+    listings = parser.xpath(XPATH_LISTINGS)
+
+    for results in listings:
+
+        # For each business on this page, gather do the thing with their data
+
+        XPATH_BUSINESS_NAME = ".//a[@class='listing-name']//text()" 
+        XPATH_BUSSINESS_PAGE = ".//a[@class='listing-name']//@href" 
+        XPATH_TELEPHONE = ".//a[@class='click-to-call contact contact-preferred contact-phone']//@href"
+        XPATH_ADDRESS = ".//a[@class='contact contact-main contact-email']//@data-email"
+        XPATH_LOCATION = ".//p[@class='listing-address mappable-address']//text()"
+        #XPATH_STREET = ".//div[@class='info']//div//p[@itemprop='address']//span[@itemprop='streetAddress']//text()"
+        #XPATH_LOCALITY = ".//div[@class='info']//div//p[@itemprop='address']//span[@itemprop='addressLocality']//text()"
+        #XPATH_REGION = ".//div[@class='info']//div//p[@itemprop='address']//span[@itemprop='addressRegion']//text()"
+        #XPATH_ZIP_CODE = ".//div[@class='info']//div//p[@itemprop='address']//span[@itemprop='postalCode']//text()"
+        #XPATH_RANK = ".//div[@class='info']//h2[@class='n']/text()"
+        #XPATH_CATEGORIES = ".//div[@class='info']//div[contains(@class,'info-section')]//div[@class='categories']//text()"
+        XPATH_WEBSITE = ".//a[@class='contact contact-main contact-url']//@href"
+        #XPATH_RATING = ".//div[@class='info']//div[contains(@class,'info-section')]//div[contains(@class,'result-rating')]//span//text()"
+
+        raw_business_name = results.xpath(XPATH_BUSINESS_NAME)
+        raw_business_telephone = results.xpath(XPATH_TELEPHONE)	
+        raw_business_page = results.xpath(XPATH_BUSSINESS_PAGE)
+        #raw_categories = results.xpath(XPATH_CATEGORIES)
+        raw_website = results.xpath(XPATH_WEBSITE)
+        #raw_rating = results.xpath(XPATH_RATING)
+        # address = results.xpath(XPATH_ADDRESS)
+        #raw_street = results.xpath(XPATH_STREET)
+        #raw_locality = results.xpath(XPATH_LOCALITY)
+        #raw_region = results.xpath(XPATH_REGION)
+        #raw_zip_code = results.xpath(XPATH_ZIP_CODE)
+        #aw_rank = results.xpath(XPATH_RANK)
+        raw_address = results.xpath(XPATH_ADDRESS)
+        raw_location = results.xpath(XPATH_LOCATION)
+        
+        business_name = ''.join(raw_business_name).strip() if raw_business_name else None
+        telephone = ''.join(raw_business_telephone).strip() if raw_business_telephone else None
+        business_page = ''.join(raw_business_page).strip() if raw_business_page else None
+        #rank = ''.join(raw_rank).replace('.\xa0','') if raw_rank else None
+        #category = ','.join(raw_categories).strip() if raw_categories else None
+        website = ''.join(raw_website).strip() if raw_website else None
+        #rating = ''.join(raw_rating).replace("(","").replace(")","").strip() if raw_rating else None
+        #street = ''.join(raw_street).strip() if raw_street else None
+        #locality = ''.join(raw_locality).replace(',\xa0','').strip() if raw_locality else None
+        #region = ''.join(raw_region).strip() if raw_region else None
+        #zipcode = ''.join(raw_zip_code).strip() if raw_zip_code else None
+        address = ''.join(raw_address).strip() if raw_address else None
+        location = ''.join(raw_location).strip() if raw_location else None
+
+
+        business_details = {
+                            'business_name':business_name,
+                            'telephone':telephone,
+                            'business_page':business_page,
+                            #'rank':rank,
+                            #'category':category,
+                            'website':website,
+                            #'rating':rating,
+                            #'street':street,
+                            #'locality':locality,
+                            #'region':region,
+                            #'zipcode':zipcode,
+                            #'listing_url':response.url
+                            'address':address,
+                            'location':location
+        }
+
+        scraped_results.append(business_details)
