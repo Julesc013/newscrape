@@ -99,7 +99,7 @@ do
 
          filename="${clue}-NSW-${suburb}-${page}"
 
-         printf "\e[33;2mGetting $filename...\n\e[0m">&2
+         printf "\e[33;2mGetting $filename...\e[0m">&2
 
          # Construct URL
          address="${addressbase[0]}${clue}${addressbase[1]}${page}${addressbase[2]}NSW${addressbase[3]}${suburb}+NSW"
@@ -108,8 +108,16 @@ do
          # Only get if $resume is false or the file doesn't exist.
          if [ "$resume" = false -o ! -e "$destination" ]
          then
+
+            printf "\n" # Formatting
+
             # Get the first page (and get the number of pages if required).
             ./save_page_as.sh $address "--browser" $browser "--destination" $destination --load-wait-time $loadwait --save-wait-time $savewait
+         
+         else
+
+            printf "\e[32m Skipped.\n\e[0m">&2
+         
          fi
 
          # If the number of pages hasn't been retrieved already, retrieve it.
@@ -118,6 +126,8 @@ do
 
             # Update this number after the first scrape of each new suburb.
             #pagesnumber=$(cat ~/Documents/Newscrape/Binaries/pagesnumber.txt)
+
+            printf "\e[33mFinding number of pages...\e[0m">&2
 
             linenumber=$(grep -n "cell search-message first-cell" ${destination} | cut -d: -f1)
             resultshtml=$(sed "$(($linenumber + 1))q;d" ${destination})
@@ -128,9 +138,15 @@ do
             # Do the math
             if [ "$resultsnumber" -ge 1 -a "$resultsnumber" -le 1500 ]
             then
+
                pagesnumber=$(python -c "from math import ceil; print int(ceil($resultsnumber/35.0))")
+               printf "\e[32m Done.\n\e[0m">&2
+
             else
+
                resultsnumber=-1
+               printf "\e[31m Failed.\n\e[0m">&2
+               
             fi
 
          fi
