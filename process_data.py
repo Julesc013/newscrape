@@ -43,7 +43,7 @@ def find_match(sheet, column, text): # Search the existing data for matches... i
 
             if(cell.value is not None): # We need to check that the cell is not empty
 
-                if text in cell.value: # Check if the value of the cell contains the text
+                if cell.value == text: # Check if the value of the cell contains the text
 
                     return True # return true then break out of this function
         
@@ -171,6 +171,11 @@ sheet_new = book_new['Sheet1'] # Load the worksheet
 print(" Done.")
 
 
+# Get the last row in the sheet
+final_row_all = sheet_all.max_row
+final_row_new = 1 #sheet_new.max_row # Always start at the top of the sheet
+
+
 # Loop through each newly retrieved record
 
 listings_count = len(listings)
@@ -199,25 +204,37 @@ for index in range(0, listings_count - 1):
 
     else:
 
+        print(" Found new listing.")
+
         # Add the new listing to both spreadsheets
 
-        # Get the last row in the sheet#
-        final_row_all = sheet_all.max_row
-        #final_row_new = sheet_new.max_row
-        # Using the old max row as a base...
+        # Using the old max row as a base get the next row number to write to
         this_row_all = final_row_all + index + 1
-        this_row_new = 1 + index + 1 # Start at the top
+        this_row_new = final_row_new + index + 1 # Start at the top
+
+        print("Adding " + business.business_name + " to spreadsheets...", end="")
 
         # Add to all listings sheet
-        sheet_all.cell(row=this_row_all, column=1).value = this_name_exists # Name
-        sheet_all.cell(row=this_row_all, column=2).value = this_phone_exists # Phone
-        sheet_all.cell(row=this_row_all, column=3).value = this_email_exists # Email
-        sheet_all.cell(row=this_row_all, column=4).value = this_website_exists # Website
-        sheet_all.cell(row=this_row_all, column=5).value = this_yellow_page_exists # Yellow Page
+        sheet_all.cell(row=this_row_all, column=1).value = this_name # Name
+        sheet_all.cell(row=this_row_all, column=2).value = this_phone # Phone
+        sheet_all.cell(row=this_row_all, column=3).value = this_email # Email
+        sheet_all.cell(row=this_row_all, column=4).value = this_website # Website
+        sheet_all.cell(row=this_row_all, column=5).value = this_yellow_page # Yellow Page
 
         # Add to new listings sheet
-        sheet_new.cell(row=this_row_new, column=1).value = this_name_exists # Name
-        sheet_new.cell(row=this_row_new, column=2).value = this_phone_exists # Phone
-        sheet_new.cell(row=this_row_new, column=3).value = this_email_exists # Email
-        sheet_new.cell(row=this_row_new, column=4).value = this_website_exists # Website
-        sheet_new.cell(row=this_row_new, column=5).value = this_yellow_page_exists # Yellow Page
+        sheet_new.cell(row=this_row_new, column=1).value = this_name # Name
+        sheet_new.cell(row=this_row_new, column=2).value = this_phone # Phone
+        sheet_new.cell(row=this_row_new, column=3).value = this_email # Email
+        sheet_new.cell(row=this_row_new, column=4).value = this_website # Website
+        sheet_new.cell(row=this_row_new, column=5).value = this_yellow_page # Yellow Page
+
+
+        print(" Done.")
+
+print("Saving all spreadsheets...", end="")
+
+# Save the changes to the files
+book_all.save(all_path)
+book_new.save(new_path)
+
+print(" Done.")
