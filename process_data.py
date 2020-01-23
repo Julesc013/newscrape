@@ -178,8 +178,10 @@ final_row_new = 1 #sheet_new.max_row # Always start at the top of the sheet
 
 # Loop through each newly retrieved record
 
+index = 0
+sheet_index = 0 # This is used so that no rows are skipped in the spreadsheet
 listings_count = len(listings)
-for index in range(0, listings_count - 1):
+while index <= listings_count - 1:
 
     business = listings[index]
 
@@ -201,6 +203,8 @@ for index in range(0, listings_count - 1):
     if this_name_exists or this_phone_exists or this_email_exists or this_website_exists or this_yellow_page_exists: # If any of the searches returned a True result for existence
 
         print(" Already exists.")
+
+        # Keep sheet_index the same
 
     else:
 
@@ -230,6 +234,11 @@ for index in range(0, listings_count - 1):
 
 
         print(" Done.")
+
+        sheet_index += 1
+
+
+    index += 1 # Increment index (b/c not using a for loop)
 
 print("Saving all spreadsheets...", end="")
 
