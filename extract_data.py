@@ -10,7 +10,7 @@ import unicodecsv as csv
 import argparse
 from requests_testadapter import Resp
 
-class LocalFileAdapter(requests.adapters.HTTPAdapter):
+class LocalFileAdapter(requests.adapters.HTTPAdapter): # This allows a locally saved HTML file to be retrieved just as the "get" function would.
     def build_response_from_file(self, request):
         file_path = request.url[7:]
         with open(file_path, 'rb') as file:
@@ -26,6 +26,12 @@ class LocalFileAdapter(requests.adapters.HTTPAdapter):
 
         return self.build_response_from_file(request)
 
+class listing: # Record structure to hold new listings found on each page.
+    def __init__(business_name, phone_number, email_address, business_website):
+        self.business_name = business_name
+        self.phone_number = phone_number
+        self.email_address = email_address
+        self.business_website = business_website
 
 def search_data(sheet, column, text): # Search the existing data for matches... if found, don't count this as a new listing # Sheet must be an Excel worksheet, Column should be in set {A,B,C,D} and Text should be alphanumeric.
 
@@ -75,11 +81,14 @@ print(" Done.")
 pages_bytes = os.fsencode(pages_path) # Get the directory link
 for page_bytes in os.listdir(pages_bytes):
 
+    # Declare lists that will hold listing data.
+
+
     # Get file name and path
     page_file = os.fsdecode(page_bytes)
     page_path = pages_path + page_file
 
-    print("Parsing " + page_file + "...", end="") # DEBUG
+    print("Getting " + page_file + "...", end="") # DEBUG
     
     requests_session = requests.session()
     requests_session.mount('file://', LocalFileAdapter())
@@ -89,25 +98,41 @@ for page_bytes in os.listdir(pages_bytes):
     if response.status_code==200:
 
         print(" Success.")
+        print("Parsing HTML code... ", end="")
 
         soup = BeautifulSoup(response.text, 'html.parser')
+
+        print(" Done.")
+        print("Finding listings data... ", end="")
 
 
         # Gather all listings' data and check if they have already been identified.
 
-        XPATH_BUSINESS_NAME = "//a[@class='listing-name']//text()"
-        XPATH_TELEPHONE = "//a[@class='click-to-call contact contact-preferred contact-phone']//@href"
-        XPATH_ADDRESS = "//a[@class='contact contact-main contact-email']//@data-email"
-        XPATH_WEBSITE = "//a[@class='contact contact-main contact-url']//@href"
+        # Get the html data of each match.
+        business_names_html = soup.find_all("a", attrs={"class": "listing-name"})
+        phone_numbers_html = soup.find_all("a", attrs={"class": "click-to-call contact contact-preferred contact-phone"})
+        email_addresses_html = soup.find_all("a", attrs={"class": "contact contact-main contact-email"})
+        business_websites_html = soup.find_all("a", attrs={"class": "class='contact contact-main contact-url"})
 
-        raw_business_names = soup.xpath(XPATH_BUSINESS_NAME)
-        raw_business_telephones = soup.xpath(XPATH_TELEPHONE)
-        raw_websites = soup.xpath(XPATH_WEBSITE)
-        raw_addresses = soup.xpath(XPATH_ADDRESS)
-        
+        # Extract the appropriate sections of each html datum.
+        for name in business_names_html:
+            business_names.append(name.get('text'))
+        for number in business_names_html:
+            phone_numbers.append(number.get('href'))
+        for address in business_names_html:
+            email_addresses.append(address.get('data-email'))
+        for website in business_names_html:
+            business_websites.append(website.get('href'))
+
+        #XPATH_BUSINESS_NAME = "//a[@class='listing-name']//text()"
+        #XPATH_TELEPHONE = "//a[@class='click-to-call contact contact-preferred contact-phone']//@href"
+        #XPATH_ADDRESS = "//a[@class='contact contact-main contact-email']//@data-email"
+        #XPATH_WEBSITE = "//a[@class='contact contact-main contact-url']//@href"
+
+        print(" Done.")
 
         #TEST PRINT DEBUG
-        print(raw_business_names)
+        print(business_names)
 
 
         # Check if this business listing exists
