@@ -52,6 +52,8 @@ results_path = r"/home/webscraper/Documents/Newscrape/Results/"
 all_path = results_path + "all_results.xlsx"
 new_path = results_path + "new_results.xlsx"
 template_path = results_path + "new_results_template.xlsx"
+# Declare list that will hold listing records.
+listings = []
 
 
 # Make a fresh copy of the new-results template for editing.
@@ -81,9 +83,6 @@ print(" Done.")
 pages_bytes = os.fsencode(pages_path) # Get the directory link
 for page_bytes in os.listdir(pages_bytes):
 
-    # Declare list that will hold listing data.
-    listings = []
-
     # Get file name and path
     page_file = os.fsdecode(page_bytes)
     page_path = pages_path + page_file
@@ -112,37 +111,52 @@ for page_bytes in os.listdir(pages_bytes):
 
             print("Extracting listing " + listing_html.get('data-listing-name') + "..." , end='')
 
-            # Make links absolute
+            ## Make links absolute
             base_url = "https://www.yellowpages.com.au"
-            listing_html.make_links_absolute(base_url)
+            #listing_html.make_links_absolute(base_url)
 
+
+            # Reset variables
+            business_name_html = None
+            phone_number_html = None
+            email_address_html = None
+            business_website_html = None
+            name = None
+            phone = None
+            email = None
+            website = None
 
             # Get the html data of each match.
             business_name_html = listing_html.find("a", attrs={"class": "listing-name"})
-            phone_number_html = listing_html.find("a", attrs={"class": "click-to-call contact contact-preferred contact-phone"})
+            #phone_number_html = listing_html.find("a", attrs={"class": "click-to-call contact contact-preferred contact-phone"})
+            phone_number_html = listing_html.find("a", attrs={"class": lambda x: x and 'click-to-call contact contact-preferred' in x})
             email_address_html = listing_html.find("a", attrs={"class": "contact contact-main contact-email"})
-            #business_website_html = listing_html.find("a", attrs={"class": "contact contact-main contact-url"})
+            business_website_html = listing_html.find("a", attrs={"class": "contact contact-main contact-url"})
 
 
             # Extract the appropriate sections of each html element.
 
-            # Get sections
-            name = business_name_html.get('text')
-            phone = phone_number_html.get('href')
-            email = email_address_html.get('data-email')
-            #website = business_website_html.get('href')
-            yellow_page = business_name_html.get('href') # Link to the Yellow Pages listing.
+            # Get sections (only if they exist)
+            if business_name_html is not None:
+                name = business_name_html.text
+            if phone_number_html is not None:
+                phone = phone_number_html.get('href')
+            if email_address_html is not None:
+                email = email_address_html.get('data-email')
+            if business_website_html is not None:
+                website = business_website_html.get('href')
+            #yellow_page = business_name_html.get('href') # Link to the Yellow Pages listing.
+
+            print() # DEBUG
+            print(name, phone, email, website)
 
             # Add sections to a record
-            record = listing(name, phone, email, yellow_page) # Use the YP listing instead of the actual website temporarily.
+            record = listing(name, phone, email, website)
+            #record = listing(name, phone, email, base_url + yellow_page) # Use the YP listing instead of the actual website temporarily.
             # Append this record to the list of listings
             listings.append(record)
 
             print(" Done.")
-
-
-        #TEST PRINT DEBUG
-        print(listings)
 
 
     else:
