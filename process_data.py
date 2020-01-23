@@ -27,20 +27,26 @@ class LocalFileAdapter(requests.adapters.HTTPAdapter): # This allows a locally s
         return self.build_response_from_file(request)
 
 class listing: # Record structure to hold new listings found on each page.
-    def __init__(self, business_name, phone_number, email_address, business_website):
+    def __init__(self, business_name, phone_number, email_address, business_website, yellow_pages_link):
         self.business_name = business_name
         self.phone_number = phone_number
         self.email_address = email_address
         self.business_website = business_website
+        self.yellow_pages_link = yellow_pages_link
 
-def search_data(sheet, column, text): # Search the existing data for matches... if found, don't count this as a new listing # Sheet must be an Excel worksheet, Column should be in set {A,B,C,D} and Text should be alphanumeric.
+def find_match(sheet, column, text): # Search the existing data for matches... if found, don't count this as a new listing # Sheet must be an Excel worksheet, Column should be in set {A,B,C,D,E} and Text should be alphanumeric. # Returns True if a match is found.
 
-    # Get all cells from specified column
-    for cell in sheet[column]:
-        if(cell.value is not None): # We need to check that the cell is not empty
-            if text in cell.value: # Check if the value of the cell contains the text of the business phone number
-                return True # return true then break out of this function
-    
+    if text is not None: # Check that the string provided exists
+
+        # Get all cells from specified column
+        for cell in sheet[column]:
+
+            if(cell.value is not None): # We need to check that the cell is not empty
+
+                if text in cell.value: # Check if the value of the cell contains the text
+
+                    return True # return true then break out of this function
+        
     return False # Else (if none found) return false
 
 
@@ -61,19 +67,6 @@ listings = []
 print("Copying spreadsheet template...", end="")
 
 copyfile(template_path, new_path)
-
-print(" Done.")
-
-
-# Load worksheets
-
-print("Loading worksheets...", end="")
-
-book_all = load_workbook(filename = all_path) # Load the workbook
-sheet_all = book_all['Sheet1'] # Load the worksheet
-
-book_new = load_workbook(filename = new_path) # Load the workbook
-sheet_new = book_new['Sheet1'] # Load the worksheet
 
 print(" Done.")
 
@@ -125,6 +118,7 @@ for page_bytes in os.listdir(pages_bytes):
             phone = None
             email = None
             website = None
+            yellow_page = None
 
             # Get the html data of each match.
             business_name_html = listing_html.find("a", attrs={"class": "listing-name"})
@@ -145,13 +139,11 @@ for page_bytes in os.listdir(pages_bytes):
                 email = email_address_html.get('data-email')
             if business_website_html is not None:
                 website = business_website_html.get('href')
-            #yellow_page = business_name_html.get('href') # Link to the Yellow Pages listing.
-
-            print() # DEBUG
-            print(name, phone, email, website)
+            if business_name_html is not None:
+                yellow_page = business_name_html.get('href') # Link to the Yellow Pages listing.
 
             # Add sections to a record
-            record = listing(name, phone, email, website)
+            record = listing(name, phone, email, website, base_url + yellow_page)
             #record = listing(name, phone, email, base_url + yellow_page) # Use the YP listing instead of the actual website temporarily.
             # Append this record to the list of listings
             listings.append(record)
@@ -163,5 +155,69 @@ for page_bytes in os.listdir(pages_bytes):
         print(" Failed. Error (status) code: " + response.status_code)
         
 
-# Check if this business listing exists
+# Check if each business listing already exists in our local database
 
+
+# Load worksheets
+
+print("Loading worksheets...", end="")
+
+book_all = load_workbook(filename = all_path) # Load the workbook
+sheet_all = book_all['Sheet1'] # Load the worksheet
+
+book_new = load_workbook(filename = new_path) # Load the workbook
+sheet_new = book_new['Sheet1'] # Load the worksheet
+
+print(" Done.")
+
+
+# Loop through each newly retrieved record
+
+listings_count = len(listings)
+for index in range(0, listings_count - 1):
+
+    business = listings[index]
+
+    print("Checking " + business.business_name + "...", end="")
+
+    this_name = business.business_name
+    this_phone = business.phone_number
+    this_email = business.email_address
+    this_website = business.business_website
+    this_yellow_page = business.yellow_pages_link
+
+    # Search the sheet of all listings to see if it already exists
+    this_name_exists = find_match(sheet_all, "A", this_name)
+    this_phone_exists = find_match(sheet_all, "B", this_phone)
+    this_email_exists = find_match(sheet_all, "C", this_email)
+    this_website_exists = find_match(sheet_all, "D", this_website)
+    this_yellow_page_exists = find_match(sheet_all, "E", this_yellow_page)
+
+    if this_name_exists or this_phone_exists or this_email_exists or this_website_exists or this_yellow_page_exists: # If any of the searches returned a True result for existence
+
+        print(" Already exists.")
+
+    else:
+
+        # Add the new listing to both spreadsheets
+
+        # Get the last row in the sheet#
+        final_row_all = sheet_all.max_row
+        #final_row_new = sheet_new.max_row
+        # Using the old max row as a base...
+        this_row_all = final_row_all + index + 1
+        this_row_new = 1 + index + 1 # Start at the top
+
+        # Add to all listings sheet
+        sheet_all.cell(row=this_row_all, column=1).value = this_name_exists # Name
+        sheet_all.cell(row=this_row_all, column=2).value = this_phone_exists # Phone
+        sheet_all.cell(row=this_row_all, column=3).value = this_email_exists # Email
+        sheet_all.cell(row=this_row_all, column=4).value = this_website_exists # Website
+        sheet_all.cell(row=this_row_all, column=5).value = this_yellow_page_exists # Yellow Page
+
+        # Add to new listings sheet
+        sheet_new.cell(row=this_row_new, column=1).value = this_name_exists # Name
+        sheet_new.cell(row=this_row_new, column=2).value = this_phone_exists # Phone
+        sheet_new.cell(row=this_row_new, column=3).value = this_email_exists # Email
+        sheet_new.cell(row=this_row_new, column=4).value = this_website_exists # Website
+        sheet_new.cell(row=this_row_new, column=5).value = this_yellow_page_exists # Yellow Page
