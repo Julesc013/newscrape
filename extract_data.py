@@ -114,15 +114,24 @@ for page_bytes in os.listdir(pages_bytes):
         email_addresses_html = soup.find_all("a", attrs={"class": "contact contact-main contact-email"})
         business_websites_html = soup.find_all("a", attrs={"class": "class='contact contact-main contact-url"})
 
+        # DEBUG PRINT LENGTHS
+        print(len(business_names_html))
+        print(len(phone_numbers_html))
+        print(len(email_addresses_html))
+        print(len(business_websites_html))
+
+
         # Extract the appropriate sections of each html element.
         number_of_listings = len(business_names_html)
         for index in range(0, number_of_listings - 1):
 
+            print(index) #DEBUG
+
             # Get sections
-            name = business_names_html.get('text')
-            phone = phone_numbers_html.get('href')
-            email = email_addresses_html.get('data-email')
-            website = business_websites_html.get('href')
+            name = business_names_html[index].get('text')
+            phone = phone_numbers_html[index].get('href')
+            email = email_addresses_html[index].get('data-email')
+            website = business_websites_html[index].get('href')
 
             # Add sections to a record
             record = listing(name, phone, email, website)
