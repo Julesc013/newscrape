@@ -213,8 +213,8 @@ while index <= listings_count - 1:
         # Add the new listing to both spreadsheets
 
         # Using the old max row as a base get the next row number to write to
-        this_row_all = final_row_all + index + 1
-        this_row_new = final_row_new + index + 1 # Start at the top
+        this_row_all = final_row_all + sheet_index + 1
+        this_row_new = final_row_new + sheet_index + 1 # Start at the top
 
         print("Adding " + business.business_name + " to spreadsheets...", end="")
 
