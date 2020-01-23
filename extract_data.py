@@ -27,7 +27,7 @@ class LocalFileAdapter(requests.adapters.HTTPAdapter): # This allows a locally s
         return self.build_response_from_file(request)
 
 class listing: # Record structure to hold new listings found on each page.
-    def __init__(business_name, phone_number, email_address, business_website):
+    def __init__(self, business_name, phone_number, email_address, business_website):
         self.business_name = business_name
         self.phone_number = phone_number
         self.email_address = email_address
@@ -81,8 +81,8 @@ print(" Done.")
 pages_bytes = os.fsencode(pages_path) # Get the directory link
 for page_bytes in os.listdir(pages_bytes):
 
-    # Declare lists that will hold listing data.
-
+    # Declare list that will hold listing data.
+    listings = []
 
     # Get file name and path
     page_file = os.fsdecode(page_bytes)
@@ -114,25 +114,25 @@ for page_bytes in os.listdir(pages_bytes):
         email_addresses_html = soup.find_all("a", attrs={"class": "contact contact-main contact-email"})
         business_websites_html = soup.find_all("a", attrs={"class": "class='contact contact-main contact-url"})
 
-        # Extract the appropriate sections of each html datum.
-        for name in business_names_html:
-            business_names.append(name.get('text'))
-        for number in business_names_html:
-            phone_numbers.append(number.get('href'))
-        for address in business_names_html:
-            email_addresses.append(address.get('data-email'))
-        for website in business_names_html:
-            business_websites.append(website.get('href'))
+        # Extract the appropriate sections of each html element.
+        number_of_listings = len(business_names_html)
+        for index in range(0, number_of_listings - 1):
 
-        #XPATH_BUSINESS_NAME = "//a[@class='listing-name']//text()"
-        #XPATH_TELEPHONE = "//a[@class='click-to-call contact contact-preferred contact-phone']//@href"
-        #XPATH_ADDRESS = "//a[@class='contact contact-main contact-email']//@data-email"
-        #XPATH_WEBSITE = "//a[@class='contact contact-main contact-url']//@href"
+            # Get sections
+            name = business_names_html.get('text')
+            phone = phone_numbers_html.get('href')
+            email = email_addresses_html.get('data-email')
+            website = business_websites_html.get('href')
+
+            # Add sections to a record
+            record = listing(name, phone, email, website)
+            # Append this record to the list of listings
+            listings.append(record)
 
         print(" Done.")
 
         #TEST PRINT DEBUG
-        print(business_names)
+        print(listings)
 
 
         # Check if this business listing exists
