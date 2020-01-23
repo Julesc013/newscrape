@@ -110,15 +110,18 @@ for page_bytes in os.listdir(pages_bytes):
 
         for listing_html in listings_html:
 
-            print(listing_html) #DEBUG
-
             print("Extracting listing " + listing_html.get('data-listing-name') + "..." , end='')
+
+            # Make links absolute
+            base_url = "https://www.yellowpages.com.au"
+            listing_html.make_links_absolute(base_url)
+
 
             # Get the html data of each match.
             business_name_html = listing_html.find("a", attrs={"class": "listing-name"})
             phone_number_html = listing_html.find("a", attrs={"class": "click-to-call contact contact-preferred contact-phone"})
             email_address_html = listing_html.find("a", attrs={"class": "contact contact-main contact-email"})
-            business_website_html = listing_html.find("a", attrs={"class": "contact contact-main contact-url"})
+            #business_website_html = listing_html.find("a", attrs={"class": "contact contact-main contact-url"})
 
 
             # Extract the appropriate sections of each html element.
@@ -127,10 +130,11 @@ for page_bytes in os.listdir(pages_bytes):
             name = business_name_html.get('text')
             phone = phone_number_html.get('href')
             email = email_address_html.get('data-email')
-            website = business_website_html.get('href')
+            #website = business_website_html.get('href')
+            yellow_page = business_name_html.get('href') # Link to the Yellow Pages listing.
 
             # Add sections to a record
-            record = listing(name, phone, email, website)
+            record = listing(name, phone, email, yellow_page) # Use the YP listing instead of the actual website temporarily.
             # Append this record to the list of listings
             listings.append(record)
 
