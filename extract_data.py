@@ -5,9 +5,26 @@ from openpyxl import Workbook
 from openpyxl import load_workbook,styles
 import requests
 from lxml import html
+from bs4 import BeautifulSoup
 import unicodecsv as csv
 import argparse
+from requests_testadapter import Resp
 
+class LocalFileAdapter(requests.adapters.HTTPAdapter):
+    def build_response_from_file(self, request):
+        file_path = request.url[7:]
+        with open(file_path, 'rb') as file:
+            buff = bytearray(os.path.getsize(file_path))
+            file.readinto(buff)
+            resp = Resp(buff)
+            r = self.build_response(request, resp)
+
+            return r
+
+    def send(self, request, stream=False, timeout=None,
+             verify=True, cert=None, proxies=None):
+
+        return self.build_response_from_file(request)
 
 
 def search_data(sheet, column, text): # Search the existing data for matches... if found, don't count this as a new listing # Sheet must be an Excel worksheet, Column should be in set {A,B,C,D} and Text should be alphanumeric.
@@ -52,74 +69,50 @@ sheet_new = book_new['Sheet1'] # Load the worksheet
 
 print(" Done.")
 
+
 ####################################https://www.pluralsight.com/guides/extracting-data-html-beautifulsoup
 
-pages_bytes = os.fsencode(pages_path) # Get the directory thing
+pages_bytes = os.fsencode(pages_path) # Get the directory link
 for page_bytes in os.listdir(pages_bytes):
+
+    # Get file name and path
     page_file = os.fsdecode(page_bytes)
+    page_path = pages_path + page_file
 
-    print("Parsing " + page_file + "...") # DEBUG
-    tree = html.fromstring(page_file) #page_path.text
-
-    # Make links absolute
-    base_url = "https://www.yellowpages.com.au"
-    tree.make_links_absolute(base_url)
-
-    #XPATH_LISTINGS = "//div[@class='search-results search-results-data listing-group']//div[@class='flow-layout outside-gap-large inside-gap inside-gap-large vertical']//div[conatins(@class, 'cell in-area-cell find-show-more-trial']//div[@class='listing listing-search listing-data']//div[contains(@class, 'search-contact-card')]//div[contains(@class, 'search-contact-card-table-div')]" # Get the class containing all the listings from this page
-    #listings = tree.xpath(XPATH_LISTINGS)
-
-    print(tree) # DEBUG
-
-    # Gather all listings' data and check if they have already been identified.
-
-    XPATH_BUSINESS_NAME = "//a[@class='listing-name']//text()" 
-    ##XPATH_BUSSINESS_PAGE = ".//a[@class='listing-name']//@href" 
-    XPATH_TELEPHONE = "//a[@class='click-to-call contact contact-preferred contact-phone']//@href"
-    XPATH_ADDRESS = "//a[@class='contact contact-main contact-email']//@data-email"
-    ##XPATH_LOCATION = ".//p[@class='listing-address mappable-address']//text()"
-    #XPATH_STREET = ".//div[@class='info']//div//p[@itemprop='address']//span[@itemprop='streetAddress']//text()"
-    #XPATH_LOCALITY = ".//div[@class='info']//div//p[@itemprop='address']//span[@itemprop='addressLocality']//text()"
-    #XPATH_REGION = ".//div[@class='info']//div//p[@itemprop='address']//span[@itemprop='addressRegion']//text()"
-    #XPATH_ZIP_CODE = ".//div[@class='info']//div//p[@itemprop='address']//span[@itemprop='postalCode']//text()"
-    #XPATH_RANK = ".//div[@class='info']//h2[@class='n']/text()"
-    #XPATH_CATEGORIES = ".//div[@class='info']//div[contains(@class,'info-section')]//div[@class='categories']//text()"
-    XPATH_WEBSITE = "//a[@class='contact contact-main contact-url']//@href"
-    #XPATH_RATING = ".//div[@class='info']//div[contains(@class,'info-section')]//div[contains(@class,'result-rating')]//span//text()"
-
-    raw_business_names = tree.xpath(XPATH_BUSINESS_NAME)
-    raw_business_telephones = tree.xpath(XPATH_TELEPHONE)	
-    ##raw_business_page = results.xpath(XPATH_BUSSINESS_PAGE)
-    #raw_categories = results.xpath(XPATH_CATEGORIES)
-    raw_websites = tree.xpath(XPATH_WEBSITE)
-    #raw_rating = results.xpath(XPATH_RATING)
-    # address = results.xpath(XPATH_ADDRESS)
-    #raw_street = results.xpath(XPATH_STREET)
-    #raw_locality = results.xpath(XPATH_LOCALITY)
-    #raw_region = results.xpath(XPATH_REGION)
-    #raw_zip_code = results.xpath(XPATH_ZIP_CODE)
-    #aw_rank = results.xpath(XPATH_RANK)
-    raw_addresses = tree.xpath(XPATH_ADDRESS)
-    ##raw_location = results.xpath(XPATH_LOCATION)
+    print("Parsing " + page_file + "...", end="") # DEBUG
     
+    requests_session = requests.session()
+    requests_session.mount('file://', LocalFileAdapter())
+    response = requests_session.get('file://' + page_path)
 
-    #TEST PRINT DEBUG
-    print(raw_business_names)
+    # Check that the page parsed correctly before processing the data.
+    if response.status_code==200:
 
+        print(" Success.")
 
-    business_name = ''.join(raw_business_name).strip() if raw_business_name else None
-    telephone = ''.join(raw_business_telephone).strip() if raw_business_telephone else None
-    ##business_page = ''.join(raw_business_page).strip() if raw_business_page else None
-    #rank = ''.join(raw_rank).replace('.\xa0','') if raw_rank else None
-    #category = ','.join(raw_categories).strip() if raw_categories else None
-    website = ''.join(raw_website).strip() if raw_website else None
-    #rating = ''.join(raw_rating).replace("(","").replace(")","").strip() if raw_rating else None
-    #street = ''.join(raw_street).strip() if raw_street else None
-    #locality = ''.join(raw_locality).replace(',\xa0','').strip() if raw_locality else None
-    #region = ''.join(raw_region).strip() if raw_region else None
-    #zipcode = ''.join(raw_zip_code).strip() if raw_zip_code else None
-    address = ''.join(raw_address).strip() if raw_address else None
-    ##location = ''.join(raw_location).strip() if raw_location else None
+        soup = BeautifulSoup(response.text, 'html.parser')
 
 
-    # Check if this business listing exists
+        # Gather all listings' data and check if they have already been identified.
 
+        XPATH_BUSINESS_NAME = "//a[@class='listing-name']//text()"
+        XPATH_TELEPHONE = "//a[@class='click-to-call contact contact-preferred contact-phone']//@href"
+        XPATH_ADDRESS = "//a[@class='contact contact-main contact-email']//@data-email"
+        XPATH_WEBSITE = "//a[@class='contact contact-main contact-url']//@href"
+
+        raw_business_names = soup.xpath(XPATH_BUSINESS_NAME)
+        raw_business_telephones = soup.xpath(XPATH_TELEPHONE)
+        raw_websites = soup.xpath(XPATH_WEBSITE)
+        raw_addresses = soup.xpath(XPATH_ADDRESS)
+        
+
+        #TEST PRINT DEBUG
+        print(raw_business_names)
+
+
+        # Check if this business listing exists
+
+
+    else:
+        print(" Failed. Error code: " + response.status_code)
+        
