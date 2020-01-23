@@ -76,7 +76,7 @@ sheet_new = book_new['Sheet1'] # Load the worksheet
 print(" Done.")
 
 
-####################################https://www.pluralsight.com/guides/extracting-data-html-beautifulsoup
+# Extract the data from each page that was downloaded.
 
 pages_bytes = os.fsencode(pages_path) # Get the directory link
 for page_bytes in os.listdir(pages_bytes):
@@ -98,55 +98,52 @@ for page_bytes in os.listdir(pages_bytes):
     if response.status_code==200:
 
         print(" Success.")
-        print("Parsing HTML code... ", end="")
+        print("Parsing and extracting HTML code... ", end="")
 
         soup = BeautifulSoup(response.text, 'html.parser')
+        listings_html = soup.find_all("div", attrs={"class": "listing listing-search listing-data"})
 
         print(" Done.")
-        print("Finding listings data... ", end="")
 
 
         # Gather all listings' data and check if they have already been identified.
 
-        # Get the html data of each match.
-        business_names_html = soup.find_all("a", attrs={"class": "listing-name"})
-        phone_numbers_html = soup.find_all("a", attrs={"class": "click-to-call contact contact-preferred contact-phone"})
-        email_addresses_html = soup.find_all("a", attrs={"class": "contact contact-main contact-email"})
-        business_websites_html = soup.find_all("a", attrs={"class": "class='contact contact-main contact-url"})
+        for listing_html in listings_html:
 
-        # DEBUG PRINT LENGTHS
-        print(len(business_names_html))
-        print(len(phone_numbers_html))
-        print(len(email_addresses_html))
-        print(len(business_websites_html))
+            print(listing_html) #DEBUG
+
+            print("Extracting listing " + listing_html.get('data-listing-name') + "..." , end='')
+
+            # Get the html data of each match.
+            business_name_html = listing_html.find("a", attrs={"class": "listing-name"})
+            phone_number_html = listing_html.find("a", attrs={"class": "click-to-call contact contact-preferred contact-phone"})
+            email_address_html = listing_html.find("a", attrs={"class": "contact contact-main contact-email"})
+            business_website_html = listing_html.find("a", attrs={"class": "contact contact-main contact-url"})
 
 
-        # Extract the appropriate sections of each html element.
-        number_of_listings = len(business_names_html)
-        for index in range(0, number_of_listings - 1):
-
-            print(index) #DEBUG
+            # Extract the appropriate sections of each html element.
 
             # Get sections
-            name = business_names_html[index].get('text')
-            phone = phone_numbers_html[index].get('href')
-            email = email_addresses_html[index].get('data-email')
-            website = business_websites_html[index].get('href')
+            name = business_name_html.get('text')
+            phone = phone_number_html.get('href')
+            email = email_address_html.get('data-email')
+            website = business_website_html.get('href')
 
             # Add sections to a record
             record = listing(name, phone, email, website)
             # Append this record to the list of listings
             listings.append(record)
 
-        print(" Done.")
+            print(" Done.")
+
 
         #TEST PRINT DEBUG
         print(listings)
 
 
-        # Check if this business listing exists
-
-
     else:
-        print(" Failed. Error code: " + response.status_code)
+        print(" Failed. Error (status) code: " + response.status_code)
         
+
+# Check if this business listing exists
+
