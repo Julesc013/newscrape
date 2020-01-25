@@ -11,6 +11,8 @@ import argparse
 from requests_testadapter import Resp
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from math import ceil
+import list_data
 
 
 
@@ -58,21 +60,23 @@ def find_match(sheet, column, text): # Search the existing data for matches... i
 # Define variables
 
 browser = webdriver.Firefox()
-pages_path = r"/home/webscraper/Documents/Newscrape/Pages/"
+address_base = ("https://www.yellowpages.com.au/search/listings?clue=", "&eventType=pagination&openNow=false&pageNumber=", "&referredBy=UNKNOWN&&state=", "&suburb=", "+") # [0], clue, [1], page, [2] state, [3] suburb+state)
+
+clues = ('electricians+electrical+contractors', 'plumbers+gas+fitters', 'builders+building+contractors')
+states = ('NSW', 'VIC', 'QLD', 'ACT', 'SA', 'WA', 'NT', 'TAS')
+
+#pages_path = r"/home/webscraper/Documents/Newscrape/Pages/"
 results_path = r"/home/webscraper/Documents/Newscrape/Results/"
+
 all_path = results_path + "all_results.xlsx"
 new_path = results_path + "new_results.xlsx"
 template_path = results_path + "new_results_template.xlsx"
+
 # Declare list that will hold listing records.
 listings = []
 
-
-# Get the html for this page
-browser.get("https://www.yellowpages.com.au/search/listings?clue=electricians+electrical+contractors&eventType=pagination&openNow=false&pageNumber=1&referredBy=UNKNOWN&&state=NSW&suburb=Dubbo+NSW")
-html_source = browser.page_source
-
-print(html_source)
-
+# Get the list of suburbs (as a disctionary of tuples)
+suburbs = list_data.get_suburbs()
 
 # Make a fresh copy of the new-results template for editing.
 
@@ -83,89 +87,119 @@ copyfile(template_path, new_path)
 print(" Done.")
 
 
-# Extract the data from each page that was downloaded.
+# Download and extract data from every page!
 
-pages_bytes = os.fsencode(pages_path) # Get the directory link
-for page_bytes in os.listdir(pages_bytes):
+#Loop through each, clue, state, suburb, and page.
 
-    # Get file name and path
-    page_file = os.fsdecode(page_bytes)
-    page_path = pages_path + page_file
+for clue in clues:
 
-    print("Getting " + page_file + "...", end="") # DEBUG
-    
-    requests_session = requests.session()
-    requests_session.mount('file://', LocalFileAdapter())
-    response = requests_session.get('file://' + page_path)
+    for state in states:
 
-    # Check that the page parsed correctly before processing the data.
-    if response.status_code==200:
+        for suburb in suburbs[state]: # Only the suburbs in this state
 
-        print(" Success.")
-        print("Parsing and extracting HTML code... ", end="")
+            # Reset page numbers file
+            pages_number = -1
 
-        soup = BeautifulSoup(response.text, 'html.parser')
-        listings_html = soup.find_all("div", attrs={"class": "listing listing-search listing-data"})
+            # Loop through all pages
+            page = 1
+            while ( (page <= pages_number or pages_number == -1) and page <= 30):
 
-        print(" Done.")
+                # Construct the url
+                web_address = address_base[0] + clue + address_base[1] + page_number + address_base[2] + state + address_base[3] + suburb + address_base[4] + state
 
+                print("Getting " + web_address + "...", end="")
+                
+                # Get the html for this page
+                browser.get(web_address)
+                html_source = browser.page_source
 
-        # Gather all listings' data and check if they have already been identified.
+                print(" Done.")
+                print("Parsing and extracting HTML code... ", end="")
 
-        for listing_html in listings_html:
+                soup = BeautifulSoup(html_source, 'html.parser')
+                listings_html = soup.find_all("div", attrs={"class": "listing listing-search listing-data"})
 
-            print("Extracting listing " + listing_html.get('data-listing-name') + "..." , end='')
+                print(" Done.")
 
-            ## Make links absolute
-            base_url = "https://www.yellowpages.com.au"
-            #listing_html.make_links_absolute(base_url)
+                # If the number of pages hasn't been retrieved, get it from the page just downloaded
+                if pages_number == -1:
 
+                    print("Finding number of pages...", end="")
 
-            # Reset variables
-            business_name_html = None
-            phone_number_html = None
-            email_address_html = None
-            business_website_html = None
-            name = None
-            phone = None
-            email = None
-            website = None
-            yellow_page = None
+                    # Extract the number of results
+                    results_number_parent = soup.find("div", attrs={"class": "cell search-message first-cell"})
+                    results_number_html = results_number_parent.find("span", attrs={"class": "emphasise"})
+                    results_number = results_number_html.text.split()[0]
 
-            # Get the html data of each match.
-            business_name_html = listing_html.find("a", attrs={"class": "listing-name"})
-            #phone_number_html = listing_html.find("a", attrs={"class": "click-to-call contact contact-preferred contact-phone"})
-            phone_number_html = listing_html.find("a", attrs={"class": lambda x: x and 'click-to-call contact contact-preferred' in x})
-            email_address_html = listing_html.find("a", attrs={"class": "contact contact-main contact-email"})
-            business_website_html = listing_html.find("a", attrs={"class": "contact contact-main contact-url"})
+                    # Do the math
+                    if results_number >= 1 and results_number <= 1500:
 
+                        pagesnumber = int(ceil(results_number / 35.0))
 
-            # Extract the appropriate sections of each html element.
+                        print(" Done.")
+                        
+                    else:
 
-            # Get sections (only if they exist)
-            if business_name_html is not None:
-                name = business_name_html.text
-            if phone_number_html is not None:
-                phone = phone_number_html.get('href')
-            if email_address_html is not None:
-                email = email_address_html.get('data-email')
-            if business_website_html is not None:
-                website = business_website_html.get('href')
-            if business_name_html is not None:
-                yellow_page = business_name_html.get('href') # Link to the Yellow Pages listing.
+                        results_number = -1
 
-            # Add sections to a record
-            record = listing(name, phone, email, website, base_url + yellow_page)
-            #record = listing(name, phone, email, base_url + yellow_page) # Use the YP listing instead of the actual website temporarily.
-            # Append this record to the list of listings
-            listings.append(record)
-
-            print(" Done.")
+                        print(" Unreasonable result.")
 
 
-    else:
-        print(" Failed. Error (status) code: " + response.status_code)
-        
+                # Gather all listings' data and check if they have already been identified.
+
+                for listing_html in listings_html:
+
+                    print("Extracting listing " + listing_html.get('data-listing-name') + "..." , end='')
+
+                    ## Make links absolute
+                    base_url = "https://www.yellowpages.com.au"
+                    #listing_html.make_links_absolute(base_url)
+
+
+                    # Reset variables
+                    business_name_html = None
+                    phone_number_html = None
+                    email_address_html = None
+                    business_website_html = None
+                    name = None
+                    phone = None
+                    email = None
+                    website = None
+                    yellow_page = None
+
+                    # Get the html data of each match.
+                    business_name_html = listing_html.find("a", attrs={"class": "listing-name"})
+                    #phone_number_html = listing_html.find("a", attrs={"class": "click-to-call contact contact-preferred contact-phone"})
+                    phone_number_html = listing_html.find("a", attrs={"class": lambda x: x and 'click-to-call contact contact-preferred' in x})
+                    email_address_html = listing_html.find("a", attrs={"class": "contact contact-main contact-email"})
+                    business_website_html = listing_html.find("a", attrs={"class": "contact contact-main contact-url"})
+
+
+                    # Extract the appropriate sections of each html element.
+
+                    # Get sections (only if they exist)
+                    if business_name_html is not None:
+                        name = business_name_html.text
+                    if phone_number_html is not None:
+                        phone = phone_number_html.get('href')
+                    if email_address_html is not None:
+                        email = email_address_html.get('data-email')
+                    if business_website_html is not None:
+                        website = business_website_html.get('href')
+                    if business_name_html is not None:
+                        yellow_page = business_name_html.get('href') # Link to the Yellow Pages listing.
+
+                    # Add sections to a record
+                    record = listing(name, phone, email, website, base_url + yellow_page)
+                    #record = listing(name, phone, email, base_url + yellow_page) # Use the YP listing instead of the actual website temporarily.
+                    # Append this record to the list of listings
+                    listings.append(record)
+
+                    print(" Done.")
+
+
+                page += 1 # Increment page number
+
 
 # Check if each business listing already exists in our local database
 
@@ -259,3 +293,6 @@ book_all.save(all_path)
 book_new.save(new_path)
 
 print(" Done.")
+
+
+# NOW EMAIL THE SHEETS!
