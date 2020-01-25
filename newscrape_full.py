@@ -107,7 +107,7 @@ for clue in clues:
                 # Construct the url
                 web_address = address_base[0] + clue + address_base[1] + str(page) + address_base[2] + state + address_base[3] + suburb + address_base[4] + state
 
-                print("Getting " + web_address + "...", end="")
+                print("Getting " + clue + "-" + state + "+" + suburb + "+" + page + "...", end="")
                 
                 # Get the html for this page
                 browser.get(web_address)
