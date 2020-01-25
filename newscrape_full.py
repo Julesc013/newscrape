@@ -137,12 +137,12 @@ for clue in clues:
 
             # Loop through all pages
             page = 1
-            while ( (page <= pages_number or pages_number == -1) and page <= 30):
+            while ( (page <= pages_number or pages_number == -1) and page <= 8):
 
                 # Construct the url
                 web_address = address_base[0] + clue + address_base[1] + str(page) + address_base[2] + state + address_base[3] + suburb + address_base[4] + state
 
-                console_action("Getting", clue + "-" + state + "+" + suburb + "+" + str(page))
+                console_action("Getting", web_address)
                 
                 # Get the html for this page
                 browser.get(web_address)
@@ -183,9 +183,9 @@ for clue in clues:
                         
                     except:
 
-                        pages_number = -1
+                        pages_number = 0
 
-                        console_complete("Failed", False)
+                        console_complete("Failed (assuming zero results)", False)
 
 
                 # Gather all listings' data and check if they have already been identified.
