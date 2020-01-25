@@ -142,13 +142,23 @@ for clue in clues:
                 # Construct the url
                 web_address = address_base[0] + clue + address_base[1] + str(page) + address_base[2] + state + address_base[3] + suburb + address_base[4] + state
 
-                console_action("Getting", web_address)
-                
                 # Get the html for this page
-                browser.get(web_address)
-                html_source = browser.page_source
+                while True: # Loop forever until successful
+                    try:
 
-                console_complete("Done", True)
+                        console_action("Getting", web_address)
+                
+                        browser.get(web_address)
+                        html_source = browser.page_source
+
+                        console_complete("Done", True)
+                        break
+
+                    except:
+
+                        console_complete("Failed", False)
+                        pass
+
                 console_action("Parsing and extracting HTML code", "")
 
                 soup = BeautifulSoup(html_source, 'html.parser')
@@ -237,6 +247,7 @@ for clue in clues:
                     #record = listing(name, phone, email, base_url + yellow_page) # Use the YP listing instead of the actual website temporarily.
                     # Append this record to the list of listings
                     listings.append(record)
+
 
                     console_complete("Done", True)
 
