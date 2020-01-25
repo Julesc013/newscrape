@@ -89,8 +89,9 @@ all_path = results_path + "all_results.xlsx"
 new_path = results_path + "new_results.xlsx"
 template_path = results_path + "new_results_template.xlsx"
 
-# Declare list that will hold listing records.
+# Declare lists that will hold listing records.
 listings = []
+new_listings = []
 
 # Get the list of suburbs (as a disctionary of tuples)
 suburbs = list_data.get_suburbs()
@@ -246,22 +247,18 @@ for clue in clues:
 # Check if each business listing already exists in our local database
 
 
-# Load worksheets
+# Load all-results worksheet
 
-console_action("Loading worksheets", "")
+console_action("Loading worksheet", "all-results")
 
 book_all = load_workbook(filename = all_path) # Load the workbook
 sheet_all = book_all['Sheet1'] # Load the worksheet
-
-book_new = load_workbook(filename = new_path) # Load the workbook
-sheet_new = book_new['Sheet1'] # Load the worksheet
 
 console_complete("Done", True)
 
 
 # Get the last row in the sheet
 final_row_all = sheet_all.max_row
-final_row_new = 1 #sheet_new.max_row # Always start at the top of the sheet
 
 
 # Loop through each newly retrieved record
@@ -298,13 +295,14 @@ while index <= listings_count - 1:
 
         console_complete("Found new listing", True)
 
-        # Add the new listing to both spreadsheets
+        new_listings.append(business) # Add this new listing to the list of new listings
+
+        # Add the new listing to all-results spreadsheet
 
         # Using the old max row as a base get the next row number to write to
         this_row_all = final_row_all + sheet_index + 1
-        this_row_new = final_row_new + sheet_index + 1 # Start at the top
 
-        console_action("Adding", business.business_name + " to spreadsheets")
+        console_action("Adding", business.business_name + " to spreadsheet all-results")
 
         # Add to all listings sheet
         sheet_all.cell(row=this_row_all, column=1).value = this_name # Name
@@ -312,13 +310,6 @@ while index <= listings_count - 1:
         sheet_all.cell(row=this_row_all, column=3).value = this_email # Email
         sheet_all.cell(row=this_row_all, column=4).value = this_website # Website
         sheet_all.cell(row=this_row_all, column=5).value = this_yellow_page # Yellow Page
-
-        # Add to new listings sheet
-        sheet_new.cell(row=this_row_new, column=1).value = this_name # Name
-        sheet_new.cell(row=this_row_new, column=2).value = this_phone # Phone
-        sheet_new.cell(row=this_row_new, column=3).value = this_email # Email
-        sheet_new.cell(row=this_row_new, column=4).value = this_website # Website
-        sheet_new.cell(row=this_row_new, column=5).value = this_yellow_page # Yellow Page
 
 
         console_complete("Done", True)
@@ -328,14 +319,77 @@ while index <= listings_count - 1:
 
     index += 1 # Increment index (b/c not using a for loop)
 
-console_action("Saving all spreadsheets", "")
 
-# Save the changes to the files
+console_action("Saving spreadsheet", "results-all")
+
+# Save the changes to the file
 book_all.save(all_path)
+
+console_complete("Done", True)
+
+
+# Get data on new listings and add them to the new-reults spreadsheet
+
+# Load new-results worksheet
+
+console_action("Loading worksheet", "results-new")
+
+book_new = load_workbook(filename = new_path) # Load the workbook
+sheet_new = book_new['Sheet1'] # Load the worksheet
+
+console_complete("Done", True)
+
+
+# Get the last row in the sheet
+final_row_new = 1 #sheet_new.max_row # Always start at the top of the sheet
+
+
+# Loop through each newly retrieved record
+
+index = 0
+new_listings_count = len(new_listings)
+while index <= new_listings_count - 1:
+
+    new_business = new_listings[index]
+
+    #console_action("Getting ASIC data for", new_business.business_name)
+
+    ####### GET ASIC DATA!!!!!!!!!!!!!!!!!!
+
+    this_name = new_business.business_name
+    this_phone = new_business.phone_number
+    this_email = new_business.email_address
+    this_website = new_business.business_website
+    this_yellow_page = new_business.yellow_pages_link
+
+    # Add the new listing to the new-listings spreadsheet
+
+    # Using the old max row as a base get the next row number to write to
+    this_row_new = final_row_new + sheet_index + 1 # Start at the top
+
+    console_action("Adding", new_business.business_name + " to spreadsheet results-new")
+
+    # Add to new listings sheet
+    sheet_new.cell(row=this_row_new, column=1).value = this_name # Name
+    sheet_new.cell(row=this_row_new, column=2).value = this_phone # Phone
+    sheet_new.cell(row=this_row_new, column=3).value = this_email # Email
+    sheet_new.cell(row=this_row_new, column=4).value = this_website # Website
+    sheet_new.cell(row=this_row_new, column=5).value = this_yellow_page # Yellow Page
+
+
+    console_complete("Done", True)
+
+    index += 1 # Increment index (b/c not using a for loop)
+
+
+console_action("Saving spreadsheet", "resulrs-new")
+
+# Save the changes to the file
 book_new.save(new_path)
 
 console_complete("Done", True)
 
 
-# GET ASIC (ABN/ACN) DETAILS and SORT NEW LISTINGS BASED ON IF THEY HAVE A WEBSITE/ABN/ACN.
+# GET ASIC (ABN/ACN) DETAILS and SORT NEW LISTINGS BASED ON IF THEY HAVE A WEBSITE/ABN/ACN ((SEE ABOVE)).
+
 # EMAIL THE SHEETS.
