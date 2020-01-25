@@ -32,7 +32,7 @@ def console_action(action, details):
     # E.g. Saving file...
     # No newline, first word yellow, has timestamp.
 
-    output = r"\e[30m" + get_time_now() + r" \e[33m" + action + r" \e[0m" + details + "..."
+    output = get_time_now() + " " + action + " " + details + "..."
     print(output, end="")
     write_to_log(output)
 
@@ -40,18 +40,15 @@ def console_complete(result, status): # Status is a boolean representing success
     # E.g. Done.
     # Newline, green or red.
 
-    if status == True:
-        colour = r" \e[32m" # Green
-    else:
-        colour = r" \e[31m" # Red
-
-    output = r"\e[30m" + get_time_now() + colour + " " + result + "." + r" \e[0m"
+    output = result + "."
+    print(" " + output)
     write_to_log(output)
 
 def console_message(message):
     
     # Newline, magenta.
-    output = r"\e[30m" + get_time_now() + r" \e[35m" + message + "." + r" \e[0m"
+    output = get_time_now() + " " + message + "."
+    print(output)
     write_to_log(output)
 
 
@@ -96,8 +93,8 @@ suburbs = list_data.get_suburbs()
 
 # BEGIN ACTIONS
 
+
 # Make a new log file for this session
-console_action("Creating new log file", "")
 
 time_atm = datetime.now()
 time_atm_string = time_atm.strftime("%d%m%Y-%H%M%S")
@@ -106,7 +103,7 @@ log_file_name = "log-" + time_atm_string + ".log"
 with open(log_file_name, 'w') as log_file:
     log_file.write('Newscrape Console Log ' + get_time_now()) # Write the header
 
-console_complete("Done", True)
+console_message("Created new log file " + log_file_name)
 
 
 # Make a fresh copy of the new-results template for editing.
