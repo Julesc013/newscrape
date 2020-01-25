@@ -105,7 +105,7 @@ for clue in clues:
             while ( (page <= pages_number or pages_number == -1) and page <= 30):
 
                 # Construct the url
-                web_address = address_base[0] + clue + address_base[1] + page_number + address_base[2] + state + address_base[3] + suburb + address_base[4] + state
+                web_address = address_base[0] + clue + address_base[1] + page + address_base[2] + state + address_base[3] + suburb + address_base[4] + state
 
                 print("Getting " + web_address + "...", end="")
                 
