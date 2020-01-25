@@ -296,7 +296,7 @@ while index <= listings_count - 1:
 
     index += 1 # Increment index (b/c not using a for loop)
 
-console_action("Saving all spreadsheets")
+console_action("Saving all spreadsheets", "")
 
 # Save the changes to the files
 book_all.save(all_path)
