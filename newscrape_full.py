@@ -24,11 +24,17 @@ def get_time_now():
     time_string = "[" + time.strftime("%d/%m/%Y %H:%M:%S") + "]"
     return time_string
 
+def write_to_log(output):
+    with open(log_file_name, 'a') as log_file:
+        log_file.write(output)
+
 def console_action(action, details):
     # E.g. Saving file...
     # No newline, first word yellow, has timestamp.
 
-    print(r"\e[30m" + get_time_now() + r" \e[33m" + action + r" \e[0m" + details + "...", end="")
+    output = r"\e[30m" + get_time_now() + r" \e[33m" + action + r" \e[0m" + details + "..."
+    print(output, end="")
+    write_to_log(output)
 
 def console_complete(result, status): # Status is a boolean representing success
     # E.g. Done.
@@ -39,12 +45,14 @@ def console_complete(result, status): # Status is a boolean representing success
     else:
         colour = r" \e[31m" # Red
 
-    print(r"\e[30m" + get_time_now() + colour + " " + result + "." + r" \e[0m")
+    output = r"\e[30m" + get_time_now() + colour + " " + result + "." + r" \e[0m"
+    write_to_log(output)
 
 def console_message(message):
     
     # Newline, magenta.
-    print(r"\e[30m" + get_time_now() + r" \e[35m" + message + "." + r" \e[0m")
+    output = r"\e[30m" + get_time_now() + r" \e[35m" + message + "." + r" \e[0m"
+    write_to_log(output)
 
 
 def find_match(sheet, column, text): # Search the existing data for matches... if found, don't count this as a new listing # Sheet must be an Excel worksheet, Column should be in set {A,B,C,D,E} and Text should be alphanumeric. # Returns True if a match is found.
@@ -88,12 +96,22 @@ suburbs = list_data.get_suburbs()
 
 # BEGIN ACTIONS
 
+# Make a new log file for this session
+console_action("Creating new log file", "")
+
+time_atm = datetime.now()
+time_atm_string = time_atm.strftime("%d%m%Y-%H%M%S")
+log_file_name = "log-" + time_atm_string + ".log"
+
+with open(log_file_name, 'w') as log_file:
+    log_file.write('Newscrape Console Log ' + get_time_now()) # Write the header
+
+console_complete("Done", True)
+
+
 # Make a fresh copy of the new-results template for editing.
-
 console_action("Copying spreadsheet template", "")
-
 copyfile(template_path, new_path)
-
 console_complete("Done", True)
 
 
