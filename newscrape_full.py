@@ -382,7 +382,7 @@ while index <= new_listings_count - 1:
     index += 1 # Increment index (b/c not using a for loop)
 
 
-console_action("Saving spreadsheet", "resulrs-new")
+console_action("Saving spreadsheet", "results-new")
 
 # Save the changes to the file
 book_new.save(new_path)
