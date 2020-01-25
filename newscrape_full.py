@@ -154,23 +154,31 @@ for clue in clues:
 
                     console_action("Finding number of pages", "")
 
-                    # Extract the number of results
-                    results_number_parent = soup.find("div", attrs={"class": "cell search-message first-cell"})
-                    results_number_html = results_number_parent.find("span", attrs={"class": "emphasise"})
-                    results_number = int(results_number_html.text.split()[0])
+                    try:
+                            
+                        # Extract the number of results
+                        results_number_parent = soup.find("div", attrs={"class": "cell search-message first-cell"})
+                        results_number_html = results_number_parent.find("span", attrs={"class": "emphasise"})
+                        results_number = int(results_number_html.text.split()[0])
 
-                    # Do the math
-                    if results_number >= 1 and results_number <= 1500:
+                        # Do the math
+                        if results_number >= 1 and results_number <= 1500:
 
-                        pages_number = int(ceil(results_number / 35.0))
+                            pages_number = int(ceil(results_number / 35.0))
 
-                        console_complete("Done", True)
+                            console_complete("Done", True)
+                            
+                        else:
+
+                            pages_number = -1
+
+                            console_complete("Unreasonable result", False)
                         
-                    else:
+                    except:
 
                         pages_number = -1
 
-                        console_complete("Unreasonable result", False)
+                        console_complete("Failed", False)
 
 
                 # Gather all listings' data and check if they have already been identified.
