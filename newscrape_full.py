@@ -159,7 +159,7 @@ for clue in clues:
 
                 for listing_html in listings_html:
 
-                    console_action("Extracting listing", " + listing_html.get('data-listing-name'))
+                    console_action("Extracting listing", listing_html.get('data-listing-name'))
 
                     ## Make links absolute
                     base_url = "https://www.yellowpages.com.au"
