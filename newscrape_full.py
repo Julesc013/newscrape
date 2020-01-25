@@ -1,3 +1,4 @@
+import os
 from shutil import copyfile
 from openpyxl import Workbook
 from openpyxl import load_workbook,styles
@@ -25,14 +26,18 @@ def get_time_now():
     return time_string
 
 def write_to_log(output):
-    with open(log_file_name, 'a') as log_file:
+    with open(log_file_path, 'a') as log_file:
         log_file.write(output)
 
 def console_action(action, details):
     # E.g. Saving file...
     # No newline, first word yellow, has timestamp.
 
-    output = get_time_now() + " " + action + " " + details + "..."
+    if details != "":
+        output = get_time_now() + " " + action + " " + details + "..."
+    else:
+        output = get_time_now() + " " + action + "..."
+
     print(output, end="")
     write_to_log(output)
 
@@ -42,14 +47,14 @@ def console_complete(result, status): # Status is a boolean representing success
 
     output = result + "."
     print(" " + output)
-    write_to_log(output)
+    write_to_log(output + "\n")
 
 def console_message(message):
     
     # Newline, magenta.
     output = get_time_now() + " " + message + "."
     print(output)
-    write_to_log(output)
+    write_to_log(output + "\n")
 
 
 def find_match(sheet, column, text): # Search the existing data for matches... if found, don't count this as a new listing # Sheet must be an Excel worksheet, Column should be in set {A,B,C,D,E} and Text should be alphanumeric. # Returns True if a match is found.
@@ -77,7 +82,7 @@ address_base = ("https://www.yellowpages.com.au/search/listings?clue=", "&eventT
 clues = ('electricians+electrical+contractors', 'plumbers+gas+fitters', 'builders+building+contractors')
 states = ('NSW', 'VIC', 'QLD', 'ACT', 'SA', 'WA', 'NT', 'TAS')
 
-#pages_path = r"/home/webscraper/Documents/Newscrape/Pages/"
+logs_path = r"/home/webscraper/Documents/Newscrape/Logs/"
 results_path = r"/home/webscraper/Documents/Newscrape/Results/"
 
 all_path = results_path + "all_results.xlsx"
@@ -96,12 +101,16 @@ suburbs = list_data.get_suburbs()
 
 # Make a new log file for this session
 
+if not os.path.exists(logs_path): # Create the directories if they don't exist
+    os.makedirs(logs_path)
+
 time_atm = datetime.now()
 time_atm_string = time_atm.strftime("%d%m%Y-%H%M%S")
 log_file_name = "log-" + time_atm_string + ".log"
+log_file_path = os.path.join(logs_path, log_file_name)
 
-with open(log_file_name, 'w') as log_file:
-    log_file.write('Newscrape Console Log ' + get_time_now()) # Write the header
+with open(log_file_path, 'w') as log_file:
+    log_file.write('Newscrape Console Log ' + get_time_now() + "\n") # Write the header
 
 console_message("Created new log file " + log_file_name)
 
@@ -132,7 +141,7 @@ for clue in clues:
                 # Construct the url
                 web_address = address_base[0] + clue + address_base[1] + str(page) + address_base[2] + state + address_base[3] + suburb + address_base[4] + state
 
-                console_action("Getting", clue + "-" + state + "+" + suburb + "+" + page)
+                console_action("Getting", clue + "-" + state + "+" + suburb + "+" + str(page))
                 
                 # Get the html for this page
                 browser.get(web_address)
