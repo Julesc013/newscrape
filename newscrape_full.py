@@ -89,7 +89,7 @@ print(" Done.")
 
 # Download and extract data from every page!
 
-#Loop through each, clue, state, suburb, and page.
+# .split()[0]Loop through each, clue, state, suburb, and page.
 
 for clue in clues:
 
@@ -105,7 +105,7 @@ for clue in clues:
             while ( (page <= pages_number or pages_number == -1) and page <= 30):
 
                 # Construct the url
-                web_address = address_base[0] + clue + address_base[1] + page + address_base[2] + state + address_base[3] + suburb + address_base[4] + state
+                web_address = address_base[0] + clue + address_base[1] + str(page) + address_base[2] + state + address_base[3] + suburb + address_base[4] + state
 
                 print("Getting " + web_address + "...", end="")
                 
@@ -129,18 +129,18 @@ for clue in clues:
                     # Extract the number of results
                     results_number_parent = soup.find("div", attrs={"class": "cell search-message first-cell"})
                     results_number_html = results_number_parent.find("span", attrs={"class": "emphasise"})
-                    results_number = results_number_html.text.split()[0]
+                    results_number = int(results_number_html.text.split()[0])
 
                     # Do the math
                     if results_number >= 1 and results_number <= 1500:
 
-                        pagesnumber = int(ceil(results_number / 35.0))
+                        pages_number = int(ceil(results_number / 35.0))
 
                         print(" Done.")
                         
                     else:
 
-                        results_number = -1
+                        pages_number = -1
 
                         print(" Unreasonable result.")
 
