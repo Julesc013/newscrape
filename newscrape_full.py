@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from math import ceil
+from datetime import datetime
 import list_data # The file containing the lists of suburbs (in the same directory)
 
 
@@ -15,6 +16,36 @@ class listing: # Record structure to hold new listings found on each page.
         self.email_address = email_address
         self.business_website = business_website
         self.yellow_pages_link = yellow_pages_link
+
+
+def get_time_now():
+
+    time = datetime.now()
+    time_string = "[" + time.strftime("%d/%m/%Y %H:%M:%S") + "]"
+    return time_string
+
+def console_action(action, details):
+    # E.g. Saving file...
+    # No newline, first word yellow, has timestamp.
+
+    print(r"\e[30m" + get_time_now() + r" \e[33m" + action + r" \e[0m" + details + "...", end="")
+
+def console_complete(result, status): # Status is a boolean representing success
+    # E.g. Done.
+    # Newline, green or red.
+
+    if status == True:
+        colour = r" \e[32m" # Green
+    else:
+        colour = r" \e[31m" # Red
+
+    print(r"\e[30m" + get_time_now() + colour + " " + result + "." + r" \e[0m")
+
+def console_message(message):
+    
+    # Newline, magenta.
+    print(r"\e[30m" + get_time_now() + r" \e[35m" + message + "." + r" \e[0m")
+
 
 def find_match(sheet, column, text): # Search the existing data for matches... if found, don't count this as a new listing # Sheet must be an Excel worksheet, Column should be in set {A,B,C,D,E} and Text should be alphanumeric. # Returns True if a match is found.
 
@@ -54,13 +85,16 @@ listings = []
 # Get the list of suburbs (as a disctionary of tuples)
 suburbs = list_data.get_suburbs()
 
+
+# BEGIN ACTIONS
+
 # Make a fresh copy of the new-results template for editing.
 
-print("Copying spreadsheet template...", end="")
+console_action("Copying spreadsheet template", "")
 
 copyfile(template_path, new_path)
 
-print(" Done.")
+console_complete("Done", True)
 
 
 # Download and extract data from every page!
@@ -83,24 +117,24 @@ for clue in clues:
                 # Construct the url
                 web_address = address_base[0] + clue + address_base[1] + str(page) + address_base[2] + state + address_base[3] + suburb + address_base[4] + state
 
-                print("Getting " + clue + "-" + state + "+" + suburb + "+" + page + "...", end="")
+                console_action("Getting", clue + "-" + state + "+" + suburb + "+" + page)
                 
                 # Get the html for this page
                 browser.get(web_address)
                 html_source = browser.page_source
 
-                print(" Done.")
-                print("Parsing and extracting HTML code... ", end="")
+                console_complete("Done", True)
+                console_action("Parsing and extracting HTML code", "")
 
                 soup = BeautifulSoup(html_source, 'html.parser')
                 listings_html = soup.find_all("div", attrs={"class": "listing listing-search listing-data"})
 
-                print(" Done.")
+                console_complete("Done", True)
 
                 # If the number of pages hasn't been retrieved, get it from the page just downloaded
                 if pages_number == -1:
 
-                    print("Finding number of pages...", end="")
+                    console_action("Finding number of pages", "")
 
                     # Extract the number of results
                     results_number_parent = soup.find("div", attrs={"class": "cell search-message first-cell"})
@@ -112,20 +146,20 @@ for clue in clues:
 
                         pages_number = int(ceil(results_number / 35.0))
 
-                        print(" Done.")
+                        console_complete("Done", True)
                         
                     else:
 
                         pages_number = -1
 
-                        print(" Unreasonable result.")
+                        console_complete("Unreasonable result", False)
 
 
                 # Gather all listings' data and check if they have already been identified.
 
                 for listing_html in listings_html:
 
-                    print("Extracting listing " + listing_html.get('data-listing-name') + "..." , end='')
+                    console_action("Extracting listing", " + listing_html.get('data-listing-name'))
 
                     ## Make links absolute
                     base_url = "https://www.yellowpages.com.au"
@@ -171,7 +205,7 @@ for clue in clues:
                     # Append this record to the list of listings
                     listings.append(record)
 
-                    print(" Done.")
+                    console_complete("Done", True)
 
 
                 page += 1 # Increment page number
@@ -182,7 +216,7 @@ for clue in clues:
 
 # Load worksheets
 
-print("Loading worksheets...", end="")
+console_action("Loading worksheets", "")
 
 book_all = load_workbook(filename = all_path) # Load the workbook
 sheet_all = book_all['Sheet1'] # Load the worksheet
@@ -190,7 +224,7 @@ sheet_all = book_all['Sheet1'] # Load the worksheet
 book_new = load_workbook(filename = new_path) # Load the workbook
 sheet_new = book_new['Sheet1'] # Load the worksheet
 
-print(" Done.")
+console_complete("Done", True)
 
 
 # Get the last row in the sheet
@@ -207,7 +241,7 @@ while index <= listings_count - 1:
 
     business = listings[index]
 
-    print("Checking " + business.business_name + "...", end="")
+    console_action("Checking", business.business_name)
 
     this_name = business.business_name
     this_phone = business.phone_number
@@ -224,13 +258,13 @@ while index <= listings_count - 1:
 
     if this_name_exists or this_phone_exists or this_email_exists or this_website_exists or this_yellow_page_exists: # If any of the searches returned a True result for existence
 
-        print(" Already exists.")
+        console_complete("Already exists", False)
 
         # Keep sheet_index the same
 
     else:
 
-        print(" Found new listing.")
+        console_complete("Found new listing", True)
 
         # Add the new listing to both spreadsheets
 
@@ -238,7 +272,7 @@ while index <= listings_count - 1:
         this_row_all = final_row_all + sheet_index + 1
         this_row_new = final_row_new + sheet_index + 1 # Start at the top
 
-        print("Adding " + business.business_name + " to spreadsheets...", end="")
+        console_action("Adding", business.business_name + " to spreadsheets")
 
         # Add to all listings sheet
         sheet_all.cell(row=this_row_all, column=1).value = this_name # Name
@@ -255,20 +289,21 @@ while index <= listings_count - 1:
         sheet_new.cell(row=this_row_new, column=5).value = this_yellow_page # Yellow Page
 
 
-        print(" Done.")
+        console_complete("Done", True)
 
         sheet_index += 1
 
 
     index += 1 # Increment index (b/c not using a for loop)
 
-print("Saving all spreadsheets...", end="")
+console_action("Saving all spreadsheets")
 
 # Save the changes to the files
 book_all.save(all_path)
 book_new.save(new_path)
 
-print(" Done.")
+console_complete("Done", True)
 
 
-# NOW EMAIL THE SHEETS!
+# GET ASIC (ABN/ACN) DETAILS and SORT NEW LISTINGS BASED ON IF THEY HAVE A WEBSITE/ABN/ACN.
+# EMAIL THE SHEETS.
