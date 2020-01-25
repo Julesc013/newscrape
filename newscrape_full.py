@@ -1,36 +1,12 @@
-import os
-import subprocess
 from shutil import copyfile
 from openpyxl import Workbook
 from openpyxl import load_workbook,styles
-import requests
-from lxml import html
 from bs4 import BeautifulSoup
-import unicodecsv as csv
-import argparse
-from requests_testadapter import Resp
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from math import ceil
-import list_data
+import list_data # The file containing the lists of suburbs (in the same directory)
 
-
-
-class LocalFileAdapter(requests.adapters.HTTPAdapter): # This allows a locally saved HTML file to be retrieved just as the "get" function would.
-    def build_response_from_file(self, request):
-        file_path = request.url[7:]
-        with open(file_path, 'rb') as file:
-            buff = bytearray(os.path.getsize(file_path))
-            file.readinto(buff)
-            resp = Resp(buff)
-            r = self.build_response(request, resp)
-
-            return r
-
-    def send(self, request, stream=False, timeout=None,
-             verify=True, cert=None, proxies=None):
-
-        return self.build_response_from_file(request)
 
 class listing: # Record structure to hold new listings found on each page.
     def __init__(self, business_name, phone_number, email_address, business_website, yellow_pages_link):
