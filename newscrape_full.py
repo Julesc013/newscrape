@@ -6,7 +6,8 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from math import ceil
-from datetime import datetime
+import time
+from datetime import datetime, date, time, timedelta
 import list_data # The file containing the lists of suburbs (in the same directory)
 
 
@@ -140,9 +141,10 @@ total_searches = total_suburbs * total_clues # Multiply by the number of times w
 total_checks = checks_per_clue * total_clues
 
 expected_duration = total_searches * time_per_search + total_checks * time_per_check # Calculate the expected total duration of the program
-expected_duration_timedelta = datetime.timedelta(seconds=expected_duration)
+expected_duration_timedelta = timedelta(seconds=expected_duration)
 
-start_time = datetime.now
+start_time = datetime.now()
+expected_completion_time = start_time + expected_duration_timedelta
 
 # Print this information and time estimates
 
@@ -150,7 +152,7 @@ print("Total suburbs to search: " + str(total_suburbs), \
     "Total searches to do: " + str(total_searches), \
     "Expected total pages to search: " + str(total_searches * pages_multiplier), \
     "Expected run duration: " + str(expected_duration_timedelta), \
-    "Expected time of completion: " + str(start_time + expected_duration_timedelta), \
+    "Expected time of completion: " + str(expected_completion_time), \
     sep="\n")
 
 
@@ -305,7 +307,7 @@ for clue in clues:
                 page += 1 # Increment page number
 
 
-time_searching_done = datetime.now # The time at which all the downloading and searching was completed
+time_searching_done = datetime.now() # The time at which all the downloading and searching was completed
 
 
 # Check if each business listing already exists in our local database
@@ -392,7 +394,7 @@ book_all.save(all_path)
 console_complete("Done", True)
 
 
-time_checking_done = datetime.now # The time at which all the checking was completed (incl. writing to the all-spreadsheet)
+time_checking_done = datetime.now() # The time at which all the checking was completed (incl. writing to the all-spreadsheet)
 
 
 # Get data on new listings and add them to the new-reults spreadsheet
@@ -457,7 +459,7 @@ book_new.save(new_path)
 console_complete("Done", True)
 
 
-time_ranking_done = datetime.now # The time at which all the ranking (with ASIC) was completed (incl. writing to the new spreadsheet)
+time_ranking_done = datetime.now() # The time at which all the ranking (with ASIC) was completed (incl. writing to the new spreadsheet)
 
 
 
@@ -485,7 +487,7 @@ print("Duration of searching: " + str(time_searching_duration), \
     "Duration of ranking: " + str(time_ranking_duration), \
     sep="\n")
 
-finish_time = datetime.now
+finish_time = datetime.now()
 total_duration = finish_time - start_time
 difference_duration = total_duration - expected_duration
 print("Total duration: " + str(total_duration), \
