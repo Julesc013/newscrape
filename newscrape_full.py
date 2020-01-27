@@ -152,7 +152,7 @@ console_message("Calculated expected results..." + "\n" \
     "Total searches to do: " + str(total_searches) + "\n" \
     "Expected total pages to search: " + str(int(total_searches * pages_multiplier)) + "\n" \
     "Expected run duration: " + str(expected_duration_timedelta) + "\n" \
-    "Expected time of completion: " + str(start_time + expected_duration_timedelta) + "\n" \
+    "Expected time of completion: " + str(start_time + expected_duration_timedelta) \
     )
 
 
@@ -209,7 +209,9 @@ for clue in clues:
                     except KeyboardInterrupt:
 
                         console_complete("Skipped", False)
-                        break # Stop trying to download this page
+                        #IN FUTURE MAKE IT SO: Stop trying to download this page and skip the rest of this iteration (return to top of outer while loop)
+
+                        exit() # Exit the entire program as a ^C normally would
 
                     except:
 
@@ -496,5 +498,5 @@ print("Calculated actual results..." + "\n" \
     "Duration of ranking: " + str(time_ranking_duration) + "\n" \
     "Total duration: " + str(total_duration) + "\n" \
     "Expected duration: " + str(expected_duration) + "\n" \
-    "Difference from expected: " + str(difference_duration) + "\n" \
+    "Difference from expected: " + str(difference_duration) \
     )
