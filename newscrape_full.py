@@ -116,10 +116,43 @@ with open(log_file_path, 'w') as log_file:
 console_message("Created new log file " + log_file_name)
 
 
+
+# Count total pages to search through
+
+total_clues = len(clues)
+pages_multiplier = 1.0185 # Add 1.85% (derived from test data)
+time_per_search = 10.3 # On average 10.3002 seconds per search (time per clue is 16.75hrs)
+time_per_check = 0.1 # NOT A REAL VALUE, ONLY AN ESTIMATE, REPLACE LATER
+checks_per_clue = 25000 # A really rough average
+
+total_suburbs = 0
+for state in states:
+    total_suburbs += len(suburbs[state]) # Add up all the suburbs
+total_searches = total_suburbs * total_clues # Multiply by the number of times we have to fetch from each suburb
+total_checks = checks_per_clue * total_clues
+
+expected_duration = total_searches * time_per_search + total_checks * time_per_check # Calculate the expected total duration of the program
+expected_duration_timedelta = datetime.timedelta(seconds=expected_duration)
+
+start_time = datetime.now
+
+# Print this information and time estimates
+
+console_message("Calculated time estimates:", \
+    "Total suburbs to search: " + str(total_suburbs), \
+    "Total searches to do: " + str(total_searches), \
+    "Expected total pages to search: " + str(total_searches * pages_multiplier), \
+    "Expected run duration: " + str(expected_duration_timedelta), \
+    "Expected time of completion: " + str(start_time + expected_duration_timedelta), \
+    sep="\n")
+
+
+
 # Make a fresh copy of the new-results template for editing.
 console_action("Copying spreadsheet template", "")
 copyfile(template_path, new_path)
 console_complete("Done", True)
+
 
 
 # Download and extract data from every page!
