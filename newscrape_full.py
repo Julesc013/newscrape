@@ -299,6 +299,9 @@ for clue in clues:
                 page += 1 # Increment page number
 
 
+time_seaching_done = datetime.now # The time at which all the downloading and searching was completed
+
+
 # Check if each business listing already exists in our local database
 
 
@@ -383,6 +386,9 @@ book_all.save(all_path)
 console_complete("Done", True)
 
 
+time_checking_done = datetime.now # The time at which all the checking was completed (incl. writing to the all-spreadsheet)
+
+
 # Get data on new listings and add them to the new-reults spreadsheet
 
 # Load new-results worksheet
@@ -445,22 +451,38 @@ book_new.save(new_path)
 console_complete("Done", True)
 
 
-# GET ASIC (ABN/ACN) DETAILS and SORT NEW LISTINGS BASED ON IF THEY HAVE A WEBSITE/ABN/ACN ((SEE ABOVE)).
+time_ranking_done = datetime.now # The time at which all the ranking (with ASIC) was completed (incl. writing to the new spreadsheet)
+
+
+
+# GET ASIC (ABN/ACN) DETAILS and SORT NEW LISTINGS BASED ON IF THEY HAVE A WEBSITE/ABN/ACN ((SEE ABOVE--GOES INSIDE FOR LOOP)).
 # ADD ASIC RANKING TO TIME CALCULATIONS
 
 # EMAIL THE SHEETS.
 
 
-# Calculate statistics
+# Calculate and print statistics
 
 #total_pages_count = pages_counter
 total_listings_count = len(listings)
 new_listings_count = len(new_listings)
+print("Total pages: " + str(pages_counter), \
+    "Total listings: " + str(total_listings_count), \
+    "Total new listings: " + str(new_listings_count), \
+    sep="\n")
+
+time_searching_duration = time_searching_done - start_time
+time_checking_duration = time_checking_done - time_searching_done
+time_ranking_duration = time_ranking_done - time_checking_done
+print("Duration of searching: " + str(time_searching_duration), \
+    "Duration of checking: " + str(time_checking_duration), \
+    "Duration of ranking: " + str(time_ranking_duration), \
+    sep="\n")
 
 finish_time = datetime.now
 total_duration = finish_time - start_time
 difference_duration = total_duration - expected_duration
-print("Total actual duration: " + str(total_duration), \
+print("Total duration: " + str(total_duration), \
     "Expected duration: " + str(expected_duration), \
-    "Difference from estimation: " + str(difference_duration), \
+    "Difference from expected: " + str(difference_duration), \
     sep="\n")
