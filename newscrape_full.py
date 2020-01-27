@@ -147,12 +147,13 @@ start_time = datetime.now()
 
 # Print this information and time estimates
 
-print("Total suburbs to search: " + str(total_suburbs), \
-    "Total searches to do: " + str(total_searches), \
-    "Expected total pages to search: " + str(int(total_searches * pages_multiplier)), \
-    "Expected run duration: " + str(expected_duration_timedelta), \
-    "Expected time of completion: " + str(start_time + expected_duration_timedelta), \
-    sep="\n")
+console_message("Calculated expected results..." + "\n" \
+    "Total suburbs to search: " + str(total_suburbs) + "\n" \
+    "Total searches to do: " + str(total_searches) + "\n" \
+    "Expected total pages to search: " + str(int(total_searches * pages_multiplier)) + "\n" \
+    "Expected run duration: " + str(expected_duration_timedelta) + "\n" \
+    "Expected time of completion: " + str(start_time + expected_duration_timedelta) + "\n" \
+    )
 
 
 
@@ -473,23 +474,23 @@ time_ranking_done = datetime.now() # The time at which all the ranking (with ASI
 #total_pages_count = pages_counter
 total_listings_count = len(listings)
 new_listings_count = len(new_listings)
-print("Total pages: " + str(pages_counter), \
-    "Total listings: " + str(total_listings_count), \
-    "Total new listings: " + str(new_listings_count), \
-    sep="\n")
-
-time_searching_duration = time_searching_done - start_time
-time_checking_duration = time_checking_done - time_searching_done
-time_ranking_duration = time_ranking_done - time_checking_done
-print("Duration of searching: " + str(time_searching_duration), \
-    "Duration of checking: " + str(time_checking_duration), \
-    "Duration of ranking: " + str(time_ranking_duration), \
-    sep="\n")
 
 finish_time = datetime.now()
 total_duration = finish_time - start_time
 difference_duration = total_duration - expected_duration
-print("Total duration: " + str(total_duration), \
-    "Expected duration: " + str(expected_duration), \
-    "Difference from expected: " + str(difference_duration), \
-    sep="\n")
+
+time_searching_duration = time_searching_done - start_time
+time_checking_duration = time_checking_done - time_searching_done
+time_ranking_duration = time_ranking_done - time_checking_done
+
+print("Calculated actual results..." + "\n" \
+    "Total pages: " + str(pages_counter) + "\n" \
+    "Total listings: " + str(total_listings_count) + "\n" \
+    "Total new listings: " + str(new_listings_count) + "\n" \
+    "Duration of searching: " + str(time_searching_duration) + "\n" \
+    "Duration of checking: " + str(time_checking_duration) + "\n" \
+    "Duration of ranking: " + str(time_ranking_duration) + "\n" \
+    "Total duration: " + str(total_duration) + "\n" \
+    "Expected duration: " + str(expected_duration) + "\n" \
+    "Difference from expected: " + str(difference_duration) + "\n" \
+    )
