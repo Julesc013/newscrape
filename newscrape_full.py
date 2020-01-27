@@ -123,7 +123,9 @@ total_clues = len(clues)
 pages_multiplier = 1.0185 # Add 1.85% (derived from test data)
 time_per_search = 10.3 # On average 10.3002 seconds per search (time per clue is 16.75hrs)
 time_per_check = 0.1 # NOT A REAL VALUE, ONLY AN ESTIMATE, REPLACE LATER
+#time_per_rank = 10 #TEMPVAR (ASIC RANKING)
 checks_per_clue = 25000 # A really rough average
+#ranks_per_clue = 100 #TEMPVAR (ASIC RANKING)
 
 total_suburbs = 0
 for state in states:
@@ -156,6 +158,10 @@ console_complete("Done", True)
 
 # Download and extract data from every page!
 
+# Initialise counting variables
+suburbs_counter = 0
+pages_counter = 0
+
 # .split()[0]Loop through each, clue, state, suburb, and page.
 
 for clue in clues:
@@ -164,12 +170,16 @@ for clue in clues:
 
         for suburb in suburbs[state]: # Only the suburbs in this state
 
+            suburbs_counter += 1
+
             # Reset page numbers file
             pages_number = -1
 
             # Loop through all pages
             page = 1
             while ( (page <= pages_number or pages_number == -1) and page <= 8):
+
+                pages_counter += 1
 
                 # Construct the url
                 web_address = address_base[0] + clue + address_base[1] + str(page) + address_base[2] + state + address_base[3] + suburb + address_base[4] + state
@@ -178,7 +188,9 @@ for clue in clues:
                 while True: # Loop forever until successful
                     try:
 
-                        console_action("Getting", web_address)
+                        percentage_complete = (suburbs_counter / total_suburbs) * 100
+
+                        console_action("[" + str(round(percentage_complete, 2)) + "%] " + "Getting", web_address)
                 
                         browser.get(web_address)
                         html_source = browser.page_source
@@ -434,5 +446,21 @@ console_complete("Done", True)
 
 
 # GET ASIC (ABN/ACN) DETAILS and SORT NEW LISTINGS BASED ON IF THEY HAVE A WEBSITE/ABN/ACN ((SEE ABOVE)).
+# ADD ASIC RANKING TO TIME CALCULATIONS
 
 # EMAIL THE SHEETS.
+
+
+# Calculate statistics
+
+#total_pages_count = pages_counter
+total_listings_count = len(listings)
+new_listings_count = len(new_listings)
+
+finish_time = datetime.now
+total_duration = finish_time - start_time
+difference_duration = total_duration - expected_duration
+print("Total actual duration: " + str(total_duration), \
+    "Expected duration: " + str(expected_duration), \
+    "Difference from estimation: " + str(difference_duration), \
+    sep="\n")
