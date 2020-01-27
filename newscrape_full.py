@@ -107,7 +107,7 @@ if not os.path.exists(logs_path): # Create the directories if they don't exist
 
 time_atm = datetime.now()
 time_atm_string = time_atm.strftime("%d%m%Y-%H%M%S")
-log_file_name = "log-" + time_atm_string + ".log"
+log_file_name = "newscrape-" + time_atm_string + ".log"
 log_file_path = os.path.join(logs_path, log_file_name)
 
 with open(log_file_path, 'w') as log_file:
@@ -299,7 +299,7 @@ for clue in clues:
                 page += 1 # Increment page number
 
 
-time_seaching_done = datetime.now # The time at which all the downloading and searching was completed
+time_searching_done = datetime.now # The time at which all the downloading and searching was completed
 
 
 # Check if each business listing already exists in our local database
