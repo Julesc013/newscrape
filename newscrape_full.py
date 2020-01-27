@@ -102,6 +102,10 @@ suburbs = list_data.get_suburbs()
 # BEGIN ACTIONS
 
 
+print("NEWSCRAPE – Yellow Pages Web-Scraper", \
+    "Jules Carboni, Copyright 2020, Version " + version, \
+    sep="\n")
+
 # Make a new log file for this session
 
 if not os.path.exists(logs_path): # Create the directories if they don't exist
@@ -113,7 +117,7 @@ log_file_name = "newscrape-" + time_atm_string + ".log"
 log_file_path = os.path.join(logs_path, log_file_name)
 
 with open(log_file_path, 'w') as log_file:
-    log_file.write('Newscrape Console Log ' + get_time_now() + " (Version " + version + ")\n") # Write the header
+    log_file.write('Newscrape Console Log ' + get_time_now() + " (Jules Carboni, Copyright 2020, Version " + version + ")\n") # Write the header
 
 console_message("Created new log file " + log_file_name)
 
