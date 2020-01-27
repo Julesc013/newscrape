@@ -144,15 +144,14 @@ expected_duration = total_searches * time_per_search + total_checks * time_per_c
 expected_duration_timedelta = timedelta(seconds=expected_duration)
 
 start_time = datetime.now()
-expected_completion_time = start_time + expected_duration_timedelta
 
 # Print this information and time estimates
 
 print("Total suburbs to search: " + str(total_suburbs), \
     "Total searches to do: " + str(total_searches), \
-    "Expected total pages to search: " + str(total_searches * pages_multiplier), \
+    "Expected total pages to search: " + str(int(total_searches * pages_multiplier)), \
     "Expected run duration: " + str(expected_duration_timedelta), \
-    "Expected time of completion: " + str(expected_completion_time), \
+    "Expected time of completion: " + str(start_time + expected_duration_timedelta), \
     sep="\n")
 
 
