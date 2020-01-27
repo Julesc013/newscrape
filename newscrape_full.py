@@ -206,10 +206,14 @@ for clue in clues:
                         console_complete("Done", True)
                         break
 
+                    except KeyboardInterrupt:
+
+                        console_complete("Skipped", False)
+                        break # Stop trying to download this page
+
                     except:
 
                         console_complete("Failed", False)
-                        pass
 
                 console_action("Parsing and extracting HTML code", "")
 
