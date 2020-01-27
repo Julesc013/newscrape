@@ -138,8 +138,7 @@ start_time = datetime.now
 
 # Print this information and time estimates
 
-console_message("Calculated time estimates:", \
-    "Total suburbs to search: " + str(total_suburbs), \
+print("Total suburbs to search: " + str(total_suburbs), \
     "Total searches to do: " + str(total_searches), \
     "Expected total pages to search: " + str(total_searches * pages_multiplier), \
     "Expected run duration: " + str(expected_duration_timedelta), \
