@@ -76,6 +76,8 @@ def find_match(sheet, column, text): # Search the existing data for matches... i
 
 # Define variables
 
+version = "1.1.0"
+
 browser = webdriver.Firefox()
 address_base = ("https://www.yellowpages.com.au/search/listings?clue=", "&eventType=pagination&openNow=false&pageNumber=", "&referredBy=UNKNOWN&&state=", "&suburb=", "+") # [0], clue, [1], page, [2] state, [3] suburb+state)
 
@@ -111,7 +113,7 @@ log_file_name = "newscrape-" + time_atm_string + ".log"
 log_file_path = os.path.join(logs_path, log_file_name)
 
 with open(log_file_path, 'w') as log_file:
-    log_file.write('Newscrape Console Log ' + get_time_now() + "\n") # Write the header
+    log_file.write('Newscrape Console Log ' + get_time_now() + " (Version " + version + ")\n") # Write the header
 
 console_message("Created new log file " + log_file_name)
 
