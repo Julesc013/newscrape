@@ -29,7 +29,7 @@ all_path = results_path + "all_results.xlsx"
 new_path = results_path + "new_results.xlsx"
 template_path = results_path + "new_results_template.xlsx"
 
-log_file_path = None
+log_file_path = logs_path + "newscrape.tmp" # Temporary file (it stops the program from crashing!)
 
 
 class listing: # Record structure to hold new listings found on each page.
