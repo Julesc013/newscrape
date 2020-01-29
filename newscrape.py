@@ -121,7 +121,7 @@ def newscrape_main(clue):
 
     time_atm = datetime.now()
     time_atm_string = time_atm.strftime("%d%m%Y-%H%M%S")
-    log_file_name = "newscrape-" + time_atm_string + ".log"
+    log_file_name = "newscrape-" + time_atm_string + "-" + clue ".log"
     log_file_path = os.path.join(logs_path, log_file_name)
 
     with open(log_file_path, 'w') as log_file:
