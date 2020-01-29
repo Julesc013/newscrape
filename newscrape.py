@@ -29,6 +29,8 @@ all_path = results_path + "all_results.xlsx"
 new_path = results_path + "new_results.xlsx"
 template_path = results_path + "new_results_template.xlsx"
 
+log_file_path = None
+
 
 class listing: # Record structure to hold new listings found on each page.
     def __init__(self, business_name, phone_number, email_address, business_website, yellow_pages_link):
