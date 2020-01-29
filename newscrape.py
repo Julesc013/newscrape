@@ -1,5 +1,6 @@
 import os
 from shutil import copyfile
+import sys
 from openpyxl import Workbook
 from openpyxl import load_workbook,styles
 from bs4 import BeautifulSoup
@@ -9,6 +10,24 @@ from math import ceil
 import time
 from datetime import datetime, date, time, timedelta
 import list_data # The file containing the lists of suburbs (in the same directory)
+
+
+# Define variables
+
+version = "1.2.0"
+
+browser = webdriver.Firefox()
+address_base = ("https://www.yellowpages.com.au/search/listings?clue=", "&eventType=pagination&openNow=false&pageNumber=", "&referredBy=UNKNOWN&&state=", "&suburb=", "+") # [0], clue, [1], page, [2] state, [3] suburb+state)
+
+#clues = ('electricians+electrical+contractors', 'plumbers+gas+fitters', 'builders+building+contractors')
+states = ('NSW', 'VIC', 'QLD', 'ACT', 'SA', 'WA', 'NT', 'TAS')
+
+logs_path = r"/home/webscraper/Documents/Newscrape/Logs/"
+results_path = r"/home/webscraper/Documents/Newscrape/Results/"
+
+all_path = results_path + "all_results.xlsx"
+new_path = results_path + "new_results.xlsx"
+template_path = results_path + "new_results_template.xlsx"
 
 
 class listing: # Record structure to hold new listings found on each page.
@@ -77,23 +96,6 @@ def find_match(sheet, column, text): # Search the existing data for matches... i
 
 # THE MAIN FUNCTION THAT ACTUALLY DOES THE TASK
 def newscrape_main(clue):
-
-    # Define variables
-
-    version = "1.1.0"
-
-    browser = webdriver.Firefox()
-    address_base = ("https://www.yellowpages.com.au/search/listings?clue=", "&eventType=pagination&openNow=false&pageNumber=", "&referredBy=UNKNOWN&&state=", "&suburb=", "+") # [0], clue, [1], page, [2] state, [3] suburb+state)
-
-    #clues = ('electricians+electrical+contractors', 'plumbers+gas+fitters', 'builders+building+contractors')
-    states = ('NSW', 'VIC', 'QLD', 'ACT', 'SA', 'WA', 'NT', 'TAS')
-
-    logs_path = r"/home/webscraper/Documents/Newscrape/Logs/"
-    results_path = r"/home/webscraper/Documents/Newscrape/Results/"
-
-    all_path = results_path + "all_results.xlsx"
-    new_path = results_path + "new_results.xlsx"
-    template_path = results_path + "new_results_template.xlsx"
 
     # Declare lists that will hold listing records.
     listings = []
@@ -501,3 +503,13 @@ def newscrape_main(clue):
         "Expected duration: " + str(expected_duration) + "\n" \
         "Difference from expected: " + str(difference_duration) \
         )
+
+
+
+# START EXECUTION HERE WHEN RUN
+
+if __name__ == "__main__":
+
+    given_clue = sys.argv[1] # The first word supplied from the command line (following "newscrape.py")
+
+    newscrape_main(given_clue) # Go to town
