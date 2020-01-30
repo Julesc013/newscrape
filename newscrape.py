@@ -212,9 +212,9 @@ for clue in clues:
 
                         exit() # Exit the entire program as a ^C normally would
 
-                    except:
+                    except Exception as ex:
 
-                        console_complete("Failed", False)
+                        console_complete("Failed (" + str(ex) + ")", False)
 
                 console_action("Parsing and extracting HTML code", "")
 
