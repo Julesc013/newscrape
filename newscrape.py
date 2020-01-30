@@ -99,7 +99,7 @@ logs_path = r"/home/webscraper/Documents/Newscrape/Logs/"
 results_path = r"/home/webscraper/Documents/Newscrape/Results/"
 
 all_path = results_path + "all_results.xlsx"
-new_path = results_path + "new_results" + time_atm_string + ".xlsx"
+new_path = results_path + "new_results_" + time_atm_string + ".xlsx"
 template_path = results_path + "new_results_template.xlsx"
 
 # Declare lists that will hold listing records.
