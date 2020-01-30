@@ -76,7 +76,10 @@ def find_match(sheet, column, text): # Search the existing data for matches... i
 
 # Define variables
 
-version = "1.1.0"
+version = "1.1.1"
+
+time_atm = datetime.now() # Get time stamp for output files
+time_atm_string = time_atm.strftime("%d%m%Y_%H%M%S")
 
 browser = webdriver.Firefox()
 address_base = ("https://www.yellowpages.com.au/search/listings?clue=", "&eventType=pagination&openNow=false&pageNumber=", "&referredBy=UNKNOWN&&state=", "&suburb=", "+") # [0], clue, [1], page, [2] state, [3] suburb+state)
@@ -88,7 +91,7 @@ logs_path = r"/home/webscraper/Documents/Newscrape/Logs/"
 results_path = r"/home/webscraper/Documents/Newscrape/Results/"
 
 all_path = results_path + "all_results.xlsx"
-new_path = results_path + "new_results.xlsx"
+new_path = results_path + "new_results" + time_atm_string + ".xlsx"
 template_path = results_path + "new_results_template.xlsx"
 
 # Declare lists that will hold listing records.
@@ -111,9 +114,8 @@ print("NEWSCRAPE – Yellow Pages Web-Scraper", \
 if not os.path.exists(logs_path): # Create the directories if they don't exist
     os.makedirs(logs_path)
 
-time_atm = datetime.now()
-time_atm_string = time_atm.strftime("%d%m%Y-%H%M%S")
-log_file_name = "newscrape-" + time_atm_string + ".log"
+# Make filename and path
+log_file_name = "newscrape_" + time_atm_string + ".log"
 log_file_path = os.path.join(logs_path, log_file_name)
 
 with open(log_file_path, 'w') as log_file:
@@ -199,15 +201,17 @@ for clue in clues:
 
                         console_action("[" + str(round(percentage_complete, 2)) + "%] " + "Getting", web_address)
                 
-                        browser.get(web_address)
-                        html_source = browser.page_source
+                        browser.get(web_address) # Get the webpage from the Internet
+                        #WebDriverWait(driver, 30).until(readystate_complete) # Wait until the page is fully loaded
+
+                        html_source = browser.page_source # Get the source from the browser driver
 
                         console_complete("Done", True)
                         break
 
                     except KeyboardInterrupt:
 
-                        console_complete("Skipped", False)
+                        console_complete("Skipped (Quit Program)", False)
                         #IN FUTURE MAKE IT SO: Stop trying to download this page and skip the rest of this iteration (return to top of outer while loop)
 
                         exit() # Exit the entire program as a ^C normally would
