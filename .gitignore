@@ -1,3 +1,4 @@
-# Ignore all logs and keys
+# Ignore logs, keys and Python caches.
 *.log
 *.key
+*.pyc
