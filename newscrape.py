@@ -26,6 +26,14 @@ def get_time_now():
     time_string = "[" + time.strftime("%d/%m/%Y %H:%M:%S") + "]"
     return time_string
 
+def format_time_seconds(time_seconds):
+
+    # Take in the time in seconds and return the HMS format string
+    minutes, seconds = divmod(time_seconds, 60)
+    hours, minutes = divmod(minutes, 60)
+    return f'{int(hours):d}:{int(minutes):02d}:{int(seconds):02d}'
+
+
 def write_to_log(output):
     with open(log_file_path, 'a') as log_file:
         log_file.write(output)
@@ -76,7 +84,7 @@ def find_match(sheet, column, text): # Search the existing data for matches... i
 
 # Define variables
 
-version = "1.1.1"
+version = "1.1.2"
 
 time_atm = datetime.now() # Get time stamp for output files
 time_atm_string = time_atm.strftime("%d%m%Y_%H%M%S")
@@ -152,7 +160,7 @@ console_message("Calculated expected results..." + "\n" \
     "Total suburbs to search: " + str(total_suburbs) + "\n" \
     "Total searches to do: " + str(total_searches) + "\n" \
     "Expected total pages to search: " + str(int(total_searches * pages_multiplier)) + "\n" \
-    "Expected run duration: " + str(expected_duration_timedelta) + "\n" \
+    "Expected run duration: " + format_time_seconds(expected_duration) + " (" + str(expected_duration_timedelta.days) + " days)" + "\n" \
     "Expected time of completion: " + str(start_time + expected_duration_timedelta) \
     )
 
@@ -187,6 +195,8 @@ for clue in clues:
             # Loop through all pages
             page = 1
             while ( (page <= pages_number or pages_number == -1) and page <= 8):
+                
+                print() # Add an empty line (to the terminal printout only) to make it more readable at a glance # DEBUG
 
                 pages_counter += 1
 
@@ -196,10 +206,13 @@ for clue in clues:
                 # Get the html for this page
                 while True: # Loop forever until successful
                     try:
-
+                        
+                        # Get time values for the console display
                         percentage_complete = (suburbs_counter / total_suburbs) * 100
+                        time_remaining = expected_duration - (suburbs_counter * time_per_search)
+                        #time_remaining_timedelta = timedelta(seconds=time_remaining)
 
-                        console_action("[" + str(round(percentage_complete, 2)) + "%] " + "Getting", web_address)
+                        console_action("[" + str(round(percentage_complete, 2)) + "% T-" + format_time_seconds(time_remaining) + "] " + "Getting", web_address)
                 
                         browser.get(web_address) # Get the webpage from the Internet
                         #WebDriverWait(driver, 30).until(readystate_complete) # Wait until the page is fully loaded
