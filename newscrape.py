@@ -85,7 +85,7 @@ def find_match(sheet, column, text): # Search the existing data for matches... i
 
 # Define variables
 
-version = "1.1.2"
+version = "1.1.3"
 
 time_atm = datetime.now() # Get time stamp for output files
 time_atm_string = time_atm.strftime("%d%m%Y_%H%M%S")
