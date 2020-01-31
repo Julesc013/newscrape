@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from math import ceil
-import time
+from time import time, sleep
 from datetime import datetime, date, time, timedelta
 import list_data # The file containing the lists of suburbs (in the same directory)
 
@@ -231,7 +231,10 @@ for clue in clues:
 
                     except Exception as ex:
 
-                        console_complete("Failed (" + str(ex) + ")", False)
+                        console_complete("Failed (" + repr(ex) + ")", False)
+
+                        sleep(10) # Wait ten seconds before retrying
+                        
 
                 console_action("Parsing and extracting HTML code", "")
 
