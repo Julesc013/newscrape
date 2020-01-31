@@ -152,9 +152,10 @@ total_suburbs = 0
 for state in states:
     total_suburbs += len(suburbs[state]) # Add up all the suburbs
 total_searches = total_suburbs * total_clues # Multiply by the number of times we have to fetch from each suburb
+expected_searches = total_searches * pages_multiplier # Multiply to get add the amount of pages we expect to be in total
 total_checks = checks_per_clue * total_clues
 
-expected_duration = total_searches * time_per_search + total_checks * time_per_check # Calculate the expected total duration of the program
+expected_duration = expected_searches * time_per_search + total_checks * time_per_check # Calculate the expected total duration of the program
 expected_duration_timedelta = timedelta(seconds=expected_duration)
 
 start_time = datetime.now()
@@ -164,7 +165,7 @@ start_time = datetime.now()
 console_message("Calculated expected results..." + "\n" \
     "Total suburbs to search: " + str(total_suburbs) + "\n" \
     "Total searches to do: " + str(total_searches) + "\n" \
-    "Expected total pages to search: " + str(int(total_searches * pages_multiplier)) + "\n" \
+    "Expected total pages to search: " + str(int(expected_searches)) + "\n" \
     "Expected run duration: " + format_time_seconds(expected_duration) + " (" + str(expected_duration_timedelta.days) + " days)" + "\n" \
     "Expected time of completion: " + str(start_time + expected_duration_timedelta) \
     )
@@ -213,7 +214,7 @@ for clue in clues:
                     try:
                         
                         # Get time values for the console display
-                        percentage_complete = (suburbs_counter / total_suburbs) * 100
+                        percentage_complete = (suburbs_counter / total_searches) * 100
                         time_remaining = expected_duration - (suburbs_counter * time_per_search)
                         #time_remaining_timedelta = timedelta(seconds=time_remaining)
 
