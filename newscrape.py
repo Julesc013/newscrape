@@ -5,6 +5,7 @@ from openpyxl import load_workbook,styles
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from math import ceil
 from time import time, sleep
 from datetime import datetime, date, time, timedelta
@@ -89,7 +90,11 @@ version = "1.1.2"
 time_atm = datetime.now() # Get time stamp for output files
 time_atm_string = time_atm.strftime("%d%m%Y_%H%M%S")
 
-browser = webdriver.Firefox()
+# Set capabilities of the firefox driver (specifically that it is allowed to ignore SSL/insecurity warnings)
+browser_capabilities = DesiredCapabilities.FIREFOX.copy()
+browser_capabilities['accept_untrusted_certs'] = True
+browser = webdriver.Firefox(capabilities=browser_capabilities)
+
 address_base = ("https://www.yellowpages.com.au/search/listings?clue=", "&eventType=pagination&openNow=false&pageNumber=", "&referredBy=UNKNOWN&&state=", "&suburb=", "+") # [0], clue, [1], page, [2] state, [3] suburb+state)
 
 clues = ('electricians+electrical+contractors', 'plumbers+gas+fitters', 'builders+building+contractors')
@@ -234,7 +239,7 @@ for clue in clues:
                         console_complete("Failed (" + repr(ex) + ")", False)
 
                         sleep(10) # Wait ten seconds before retrying
-                        
+
 
                 console_action("Parsing and extracting HTML code", "")
 
