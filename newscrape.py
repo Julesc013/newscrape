@@ -85,7 +85,7 @@ def find_match(sheet, column, text): # Search the existing data for matches... i
 
 # Define variables
 
-version = "1.1.3"
+version = "1.2.0"
 
 time_atm = datetime.now() # Get time stamp for output files
 time_atm_string = time_atm.strftime("%d%m%Y_%H%M%S")
@@ -93,7 +93,6 @@ time_atm_string = time_atm.strftime("%d%m%Y_%H%M%S")
 # Set capabilities of the firefox driver (specifically that it is allowed to ignore SSL/insecurity warnings)
 browser_capabilities = DesiredCapabilities.FIREFOX.copy()
 browser_capabilities['accept_untrusted_certs'] = True
-browser = webdriver.Firefox(capabilities=browser_capabilities)
 
 address_base = ("https://www.yellowpages.com.au/search/listings?clue=", "&eventType=pagination&openNow=false&pageNumber=", "&referredBy=UNKNOWN&&state=", "&suburb=", "+") # [0], clue, [1], page, [2] state, [3] suburb+state)
 
@@ -179,6 +178,11 @@ console_complete("Done", True)
 
 
 
+# Initialise the selenium webdriver
+browser = webdriver.Firefox(capabilities=browser_capabilities)
+webdriver.Firefox.quit
+
+
 # Download and extract data from every page!
 
 # Initialise counting variables
@@ -206,8 +210,10 @@ for clue in clues:
 
                 pages_counter += 1
 
+
                 # Construct the url
                 web_address = address_base[0] + clue + address_base[1] + str(page) + address_base[2] + state + address_base[3] + suburb + address_base[4] + state
+
 
                 # Get the html for this page
                 while True: # Loop forever until successful
@@ -237,9 +243,15 @@ for clue in clues:
 
                     except Exception as ex:
 
-                        console_complete("Failed (" + repr(ex) + ")", False)
+                        console_complete("Failed (" + str(ex) + ")", False)
 
-                        sleep(10) # Wait ten seconds before retrying
+
+                        # Reinitialise the selenium webdriver to circumvent certificate errors
+                        webdriver.Firefox.quit # Gracefully quit driver
+                        browser = webdriver.Firefox(capabilities=browser_capabilities) # Restart the driver
+
+
+                        #sleep(10) # Wait ten seconds before retrying
 
 
                 console_action("Parsing and extracting HTML code", "")
