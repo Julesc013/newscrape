@@ -55,8 +55,8 @@ def console_complete(result, status): # Status is a boolean representing success
     # E.g. Done.
     # Newline, green or red.
 
-    output = result + "."
-    print(" " + output)
+    output = " " + result + "."
+    print(output)
     write_to_log(output + "\n")
 
 def console_message(message):
