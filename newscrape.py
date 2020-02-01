@@ -243,15 +243,21 @@ for clue in clues:
 
                     except Exception as ex:
 
-                        console_complete("Failed (" + str(ex) + ")", False)
+                        console_complete("Failed (" + str(ex) + ")", False) # Display error message (details)
 
 
                         # Reinitialise the selenium webdriver to circumvent certificate errors
+                        console_action("Restarting web driver", "")
+
                         webdriver.Firefox.quit # Gracefully quit driver
                         browser = webdriver.Firefox(capabilities=browser_capabilities) # Restart the driver
+                        
+                        console_complete("Done", True)
 
 
-                        #sleep(10) # Wait ten seconds before retrying
+                        # Wait ten seconds before retrying
+                        #sleep(10)
+
 
 
                 console_action("Parsing and extracting HTML code", "")
