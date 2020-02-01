@@ -236,7 +236,7 @@ for clue in clues:
 
                     except KeyboardInterrupt:
 
-                        console_complete("Skipped (Quit Program)", False)
+                        console_complete("Skipped", False)
                         #IN FUTURE MAKE IT SO: Stop trying to download this page and skip the rest of this iteration (return to top of outer while loop)
 
                         exit() # Exit the entire program as a ^C normally would
@@ -249,7 +249,7 @@ for clue in clues:
                         # Reinitialise the selenium webdriver to circumvent certificate errors
                         console_action("Restarting web driver", "")
 
-                        webdriver.Firefox.quit # Gracefully quit driver
+                        browser.quit() # Gracefully quit driver
                         browser = webdriver.Firefox(capabilities=browser_capabilities) # Restart the driver
                         
                         console_complete("Done", True)
