@@ -110,7 +110,7 @@ template_path = results_path + "new_results_template.xlsx"
 
 # Declare lists that will hold listing records.
 listings = []
-new_listings = []
+#new_listings = []
 
 
 
@@ -142,7 +142,7 @@ console_message("Created new log file " + log_file_name)
 total_clues = len(clues)
 pages_multiplier = 1.0185 # Add 1.85% (derived from test data)
 time_per_search = 10.3 # On average 10.3002 seconds per search (time per clue is 16.75hrs)
-time_per_check = 0.1 # NOT A REAL VALUE, ONLY AN ESTIMATE, REPLACE LATER
+time_per_check = 2 # NOT A REAL VALUE, ONLY AN ESTIMATE, REPLACE LATER
 time_per_rank = 0 #TEMPVAR (ASIC RANKING) # CURRENTLY 0 BECAUSE NOT IMPLEMENTED
 
 total_suburbs = 0
@@ -502,7 +502,9 @@ time_checking_done = datetime.now() # The time at which all the checking was com
 
 #total_pages_count = pages_counter
 total_listings_count = len(listings)
-new_listings_count = len(new_listings)
+#new_listings_count = len(new_listings)
+new_listings_count = sheet_index_new - final_row_new
+#all_listings_count = sheet_index_all - final_row_all #same as tot_list_count
 
 finish_time = datetime.now()
 total_duration = finish_time - start_time
@@ -511,6 +513,10 @@ difference_duration = total_duration - expected_duration_timedelta
 time_searching_duration = time_searching_done - start_time
 time_checking_duration = time_checking_done - time_searching_done
 #time_ranking_duration = time_ranking_done - time_checking_done
+
+time_per_search_actual = time_searching_duration / expected_searches
+time_per_check_actual = time_checking_duration / total_listings_count
+#time_per_rank_actual = time_ranking_duration / new_listings_count
 
 print("Calculated actual results..." + "\n" \
     "Total pages: " + str(pages_counter) + "\n" \
@@ -521,5 +527,8 @@ print("Calculated actual results..." + "\n" \
     #"Duration of ranking: " + str(time_ranking_duration) + "\n" \
     "Total duration: " + str(total_duration) + "\n" \
     "Expected duration: " + str(expected_duration_timedelta) + "\n" \
-    "Difference from expected: " + str(difference_duration) \
+    "Difference from expected: " + str(difference_duration) + "\n" \
+    "Time per search: " + str(time_per_search_actual) + "\n" \
+    "Time per check: " + str(time_per_check_actual) \
+    #"Time per rank: " + str(time_per_rank_actual) \
     )
