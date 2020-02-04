@@ -85,7 +85,7 @@ def find_match(sheet, column, text): # Search the existing data for matches... i
 
 # Define variables
 
-version = "1.2.0"
+version = "1.3.0"
 
 time_atm = datetime.now() # Get time stamp for output files
 time_atm_string = time_atm.strftime("%d%m%Y_%H%M%S")
@@ -103,6 +103,7 @@ logs_path = r"/home/webscraper/Documents/Newscrape/Logs/"
 results_path = r"/home/webscraper/Documents/Newscrape/Results/"
 
 all_path = results_path + "all_results.xlsx"
+all_backup_path = results_path + "all_results_" + time_atm_string + ".xlsx.bak"
 new_path = results_path + "new_results_" + time_atm_string + ".xlsx"
 template_path = results_path + "new_results_template.xlsx"
 
@@ -143,9 +144,9 @@ total_clues = len(clues)
 pages_multiplier = 1.0185 # Add 1.85% (derived from test data)
 time_per_search = 10.3 # On average 10.3002 seconds per search (time per clue is 16.75hrs)
 time_per_check = 0.1 # NOT A REAL VALUE, ONLY AN ESTIMATE, REPLACE LATER
-#time_per_rank = 10 #TEMPVAR (ASIC RANKING)
+time_per_rank = 0 #TEMPVAR (ASIC RANKING) # CURRENTLY 0 BECAUSE NOT IMPLEMENTED
 checks_per_clue = 25000 # A really rough average
-#ranks_per_clue = 100 #TEMPVAR (ASIC RANKING)
+ranks_per_clue = 200 #TEMPVAR (ASIC RANKING)
 
 total_suburbs = 0
 for state in states:
@@ -153,8 +154,9 @@ for state in states:
 total_searches = total_suburbs * total_clues # Multiply by the number of times we have to fetch from each suburb
 expected_searches = total_searches * pages_multiplier # Multiply to get add the amount of pages we expect to be in total
 total_checks = checks_per_clue * total_clues
+total_ranks = ranks_per_clue * total_clues
 
-expected_duration = expected_searches * time_per_search + total_checks * time_per_check # Calculate the expected total duration of the program
+expected_duration = expected_searches * time_per_search + total_checks * time_per_check + total_ranks * time_per_rank # Calculate the expected total duration of the program
 expected_duration_timedelta = timedelta(seconds=expected_duration)
 
 start_time = datetime.now()
@@ -172,8 +174,9 @@ console_message("Calculated expected results..." + "\n" \
 
 
 # Make a fresh copy of the new-results template for editing.
-console_action("Copying spreadsheet template", "")
-copyfile(template_path, new_path)
+console_action("Making new spreadsheets", "")
+copyfile(template_path, new_path) # Create new blank sheet for new listings
+copyfile(all_path, all_backup_path) # Create a backup of the current sheet of all listings
 console_complete("Done", True)
 
 
@@ -356,6 +359,8 @@ for clue in clues:
                 page += 1 # Increment page number
 
 
+browser.quit() # Gracefully quit driver, all done getting pages
+
 time_searching_done = datetime.now() # The time at which all the downloading and searching was completed
 
 
@@ -364,23 +369,30 @@ time_searching_done = datetime.now() # The time at which all the downloading and
 
 # Load all-results worksheet
 
-console_action("Loading worksheet", "all-results")
+console_action("Loading worksheets", "")
 
 book_all = load_workbook(filename = all_path) # Load the workbook
 sheet_all = book_all['Sheet1'] # Load the worksheet
+
+book_new = load_workbook(filename = new_path) # Load the workbook
+sheet_new = book_new['Sheet1'] # Load the worksheet
 
 console_complete("Done", True)
 
 
 # Get the last row in the sheet
 final_row_all = sheet_all.max_row
+final_row_new = 1 #sheet_new.max_row # Always start at the top of the sheet
 
 
 # Loop through each newly retrieved record
 
 index = 0
-sheet_index = 0 # This is used so that no rows are skipped in the spreadsheet
-listings_count = len(listings)
+# Use seperate indexes for sheets so that no rows are skipped in the spreadsheet
+sheet_index_all = final_row_all
+sheet_index_new = final_row_new
+
+listings_count = len(listings) # For each listing gathered
 while index <= listings_count - 1:
 
     business = listings[index]
@@ -404,118 +416,70 @@ while index <= listings_count - 1:
 
         console_complete("Already exists", False)
 
-        # Keep sheet_index the same
+        # Keep sheet indexes the same
 
     else:
 
         console_complete("Found new listing", True)
 
-        new_listings.append(business) # Add this new listing to the list of new listings
-
         # Add the new listing to all-results spreadsheet
 
         # Using the old max row as a base get the next row number to write to
-        this_row_all = final_row_all + sheet_index + 1
+        # AKA Increment the indexes for this new row
+        sheet_index_all += 1
+        sheet_index_new += 1
 
-        console_action("Adding", business.business_name + " to spreadsheet all-results")
+        console_action("Adding", business.business_name + " to spreadsheets")
+
 
         # Add to all listings sheet
-        sheet_all.cell(row=this_row_all, column=1).value = this_name # Name
-        sheet_all.cell(row=this_row_all, column=2).value = this_phone # Phone
-        sheet_all.cell(row=this_row_all, column=3).value = this_email # Email
-        sheet_all.cell(row=this_row_all, column=4).value = this_website # Website
-        sheet_all.cell(row=this_row_all, column=5).value = this_yellow_page # Yellow Page
+        sheet_all.cell(row=sheet_index_all, column=1).value = this_name # Name
+        sheet_all.cell(row=sheet_index_all, column=2).value = this_phone # Phone
+        sheet_all.cell(row=sheet_index_all, column=3).value = this_email # Email
+        sheet_all.cell(row=sheet_index_all, column=4).value = this_website # Website
+        sheet_all.cell(row=sheet_index_all, column=5).value = this_yellow_page # Yellow Page
+
+
+        ##console_action("Getting ASIC data for", business.business_name)
+
+        ####### GET ASIC DATA!!!!!!!!!!!!!!!!!!
+        # GET ASIC (ABN/ACN) DETAILS and SORT NEW LISTINGS BASED ON IF THEY HAVE A WEBSITE/ABN/ACN ((SEE ABOVE--GOES INSIDE FOR LOOP)).
+        # ADD ASIC RANKING TO TIME CALCULATIONS
+        #### Use the data in an algorithm to produce a ranking!!!
+
+
+        # Add to new listings sheet
+        sheet_new.cell(row=sheet_index_new, column=1).value = this_name # Name
+        sheet_new.cell(row=sheet_index_new, column=2).value = this_phone # Phone
+        sheet_new.cell(row=sheet_index_new, column=3).value = this_email # Email
+        sheet_new.cell(row=sheet_index_new, column=4).value = this_website # Website
+        sheet_new.cell(row=sheet_index_new, column=5).value = this_yellow_page # Yellow Page
 
 
         console_complete("Done", True)
-
-        sheet_index += 1
 
 
     index += 1 # Increment index (b/c not using a for loop)
 
 
-console_action("Saving spreadsheet", "results-all")
+console_action("Saving spreadsheets", "")
 
 # Save the changes to the file
 book_all.save(all_path)
+book_new.save(new_path)
 
 console_complete("Done", True)
 
 
 time_checking_done = datetime.now() # The time at which all the checking was completed (incl. writing to the all-spreadsheet)
 
-
-# Get data on new listings and add them to the new-reults spreadsheet
-
-# Load new-results worksheet
-
-console_action("Loading worksheet", "results-new")
-
-book_new = load_workbook(filename = new_path) # Load the workbook
-sheet_new = book_new['Sheet1'] # Load the worksheet
-
-console_complete("Done", True)
+#time_ranking_done = datetime.now() # The time at which all the ranking (with ASIC) was completed (incl. writing to the new spreadsheet)
 
 
-# Get the last row in the sheet
-final_row_new = 1 #sheet_new.max_row # Always start at the top of the sheet
-
-
-# Loop through each newly retrieved record
-
-index = 0
-new_listings_count = len(new_listings)
-while index <= new_listings_count - 1:
-
-    new_business = new_listings[index]
-
-    #console_action("Getting ASIC data for", new_business.business_name)
-
-    ####### GET ASIC DATA!!!!!!!!!!!!!!!!!!
-
-    this_name = new_business.business_name
-    this_phone = new_business.phone_number
-    this_email = new_business.email_address
-    this_website = new_business.business_website
-    this_yellow_page = new_business.yellow_pages_link
-
-    # Add the new listing to the new-listings spreadsheet
-
-    # Using the old max row as a base get the next row number to write to
-    this_row_new = final_row_new + sheet_index + 1 # Start at the top
-
-    console_action("Adding", new_business.business_name + " to spreadsheet results-new")
-
-    # Add to new listings sheet
-    sheet_new.cell(row=this_row_new, column=1).value = this_name # Name
-    sheet_new.cell(row=this_row_new, column=2).value = this_phone # Phone
-    sheet_new.cell(row=this_row_new, column=3).value = this_email # Email
-    sheet_new.cell(row=this_row_new, column=4).value = this_website # Website
-    sheet_new.cell(row=this_row_new, column=5).value = this_yellow_page # Yellow Page
-
-
-    console_complete("Done", True)
-
-    index += 1 # Increment index (b/c not using a for loop)
-
-
-console_action("Saving spreadsheet", "results-new")
-
-# Save the changes to the file
-book_new.save(new_path)
-
-console_complete("Done", True)
-
-
-time_ranking_done = datetime.now() # The time at which all the ranking (with ASIC) was completed (incl. writing to the new spreadsheet)
-
-
-
-# GET ASIC (ABN/ACN) DETAILS and SORT NEW LISTINGS BASED ON IF THEY HAVE A WEBSITE/ABN/ACN ((SEE ABOVE--GOES INSIDE FOR LOOP)).
-# ADD ASIC RANKING TO TIME CALCULATIONS
 
 # EMAIL THE SHEETS.
+
+
 
 
 # Calculate and print statistics
@@ -526,11 +490,11 @@ new_listings_count = len(new_listings)
 
 finish_time = datetime.now()
 total_duration = finish_time - start_time
-difference_duration = total_duration - expected_duration
+difference_duration = total_duration - expected_duration_timedelta
 
 time_searching_duration = time_searching_done - start_time
 time_checking_duration = time_checking_done - time_searching_done
-time_ranking_duration = time_ranking_done - time_checking_done
+#time_ranking_duration = time_ranking_done - time_checking_done
 
 print("Calculated actual results..." + "\n" \
     "Total pages: " + str(pages_counter) + "\n" \
@@ -538,8 +502,8 @@ print("Calculated actual results..." + "\n" \
     "Total new listings: " + str(new_listings_count) + "\n" \
     "Duration of searching: " + str(time_searching_duration) + "\n" \
     "Duration of checking: " + str(time_checking_duration) + "\n" \
-    "Duration of ranking: " + str(time_ranking_duration) + "\n" \
+    #"Duration of ranking: " + str(time_ranking_duration) + "\n" \
     "Total duration: " + str(total_duration) + "\n" \
-    "Expected duration: " + str(expected_duration) + "\n" \
+    "Expected duration: " + str(expected_duration_timedelta) + "\n" \
     "Difference from expected: " + str(difference_duration) \
     )
