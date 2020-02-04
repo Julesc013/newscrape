@@ -518,7 +518,7 @@ time_per_search_actual = time_searching_duration / expected_searches
 time_per_check_actual = time_checking_duration / total_listings_count
 #time_per_rank_actual = time_ranking_duration / new_listings_count
 
-print("Calculated actual results..." + "\n" \
+console_message("Calculated actual results..." + "\n" \
     "Total pages: " + str(pages_counter) + "\n" \
     "Total listings: " + str(total_listings_count) + "\n" \
     "Total new listings: " + str(new_listings_count) + "\n" \
