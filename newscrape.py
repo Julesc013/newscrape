@@ -227,7 +227,8 @@ for clue in clues:
                         time_remaining = expected_duration - (suburbs_counter * time_per_search)
                         #time_remaining_timedelta = timedelta(seconds=time_remaining)
 
-                        console_action("[" + str(round(percentage_complete, 2)) + "% T-" + format_time_seconds(time_remaining) + "] " + "Getting", web_address)
+                        progress_stamp = "[" + str(round(percentage_complete, 2)) + "% T-" + format_time_seconds(time_remaining) + "] "
+                        console_action(progress_stamp + "Getting", web_address)
                 
                         browser.get(web_address) # Get the webpage from the Internet
                         #WebDriverWait(driver, 30).until(readystate_complete) # Wait until the page is fully loaded
@@ -385,6 +386,10 @@ final_row_all = sheet_all.max_row
 final_row_new = 1 #sheet_new.max_row # Always start at the top of the sheet
 
 
+# Calculate the expected time remaining
+expected_duration_remaining = expected_duration - (expected_searches * time_per_search)
+
+
 # Loop through each newly retrieved record
 
 index = 0
@@ -397,7 +402,12 @@ while index <= listings_count - 1:
 
     business = listings[index]
 
-    console_action("Checking", business.business_name)
+    # Get time values for the console display
+    percentage_complete = (index / listings_count) * 100
+    time_remaining = expected_duration_remaining - (index * time_per_check)
+
+    progress_stamp = "[" + str(round(percentage_complete, 2)) + "% T-" + format_time_seconds(time_remaining) + "] "
+    console_action(progress_stamp + "Checking", business.business_name)
 
     this_name = business.business_name
     this_phone = business.phone_number
@@ -456,6 +466,11 @@ while index <= listings_count - 1:
         sheet_new.cell(row=sheet_index_new, column=5).value = this_yellow_page # Yellow Page
 
 
+        # Save the changes to the files
+        book_all.save(all_path)
+        book_new.save(new_path)
+
+
         console_complete("Done", True)
 
 
@@ -464,9 +479,11 @@ while index <= listings_count - 1:
 
 console_action("Saving spreadsheets", "")
 
-# Save the changes to the file
+# Save the changes to the files
 book_all.save(all_path)
 book_new.save(new_path)
+
+book_all.close()
 
 console_complete("Done", True)
 
