@@ -96,8 +96,9 @@ browser_capabilities['accept_untrusted_certs'] = True
 
 address_base = ("https://www.yellowpages.com.au/search/listings?clue=", "&eventType=pagination&openNow=false&pageNumber=", "&referredBy=UNKNOWN&&state=", "&suburb=", "+") # [0], clue, [1], page, [2] state, [3] suburb+state)
 
-clues = ('electricians+electrical+contractors', 'plumbers+gas+fitters', 'builders+building+contractors')
-states = ('NSW', 'VIC', 'QLD', 'ACT', 'SA', 'WA', 'NT', 'TAS')
+clues = list_data.get_clues() # Clues (as a tuple)
+states = list_data.get_states() # States (as a tuple)
+suburbs = list_data.get_suburbs() # Suburbs (as a disctionary of tuples)
 
 logs_path = r"/home/webscraper/Documents/Newscrape/Logs/"
 results_path = r"/home/webscraper/Documents/Newscrape/Results/"
@@ -111,8 +112,6 @@ template_path = results_path + "new_results_template.xlsx"
 listings = []
 new_listings = []
 
-# Get the list of suburbs (as a disctionary of tuples)
-suburbs = list_data.get_suburbs()
 
 
 # BEGIN ACTIONS
@@ -145,14 +144,14 @@ pages_multiplier = 1.0185 # Add 1.85% (derived from test data)
 time_per_search = 10.3 # On average 10.3002 seconds per search (time per clue is 16.75hrs)
 time_per_check = 0.1 # NOT A REAL VALUE, ONLY AN ESTIMATE, REPLACE LATER
 time_per_rank = 0 #TEMPVAR (ASIC RANKING) # CURRENTLY 0 BECAUSE NOT IMPLEMENTED
-checks_per_clue = 25000 # A really rough average
-ranks_per_clue = 200 #TEMPVAR (ASIC RANKING)
 
 total_suburbs = 0
 for state in states:
     total_suburbs += len(suburbs[state]) # Add up all the suburbs
 total_searches = total_suburbs * total_clues # Multiply by the number of times we have to fetch from each suburb
 expected_searches = total_searches * pages_multiplier # Multiply to get add the amount of pages we expect to be in total
+checks_per_clue = 4.273 * total_suburbs * pages_multiplier # A really rough average
+ranks_per_clue = 0.05 * total_suburbs * pages_multiplier #TEMPVAR (ASIC RANKING)
 total_checks = checks_per_clue * total_clues
 total_ranks = ranks_per_clue * total_clues
 
