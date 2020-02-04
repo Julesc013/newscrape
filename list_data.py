@@ -20,5 +20,28 @@ suburbs = {
     'TAS': suburbs_tas
     }
 
+states = (
+    'NSW',
+    'VIC',
+    'QLD',
+    'ACT',
+    'SA',
+    'WA',
+    'NT',
+    'TAS'
+    )
+
+clues = (
+    'electricians+electrical+contractors',
+    'plumbers+gas+fitters',
+    'builders+building+contractors'
+    )
+
 def get_suburbs():
     return suburbs
+
+def get_states():
+    return states
+
+def get_clues():
+    return clues
