@@ -1,0 +1,46 @@
+# Import this program and use get_suburbs to return adisctrionary of tuples of suburbs.
+
+suburbs_nsw = ('badname', 'Dubbo')
+suburbs_vic = ('badname','badname')
+suburbs_qld = ('badname','badname')
+suburbs_act = ('badname','badname')
+suburbs_sa = ('Zadows+Landing','badname')
+suburbs_wa = ('Yornup','badname')
+suburbs_nt = ('Tiwi','badname')
+suburbs_tas = ('badname','badname')
+
+suburbs = {
+    'NSW': suburbs_nsw,
+    'VIC': suburbs_vic,
+    'QLD': suburbs_qld,
+    'ACT': suburbs_act,
+    'SA': suburbs_sa,
+    'WA': suburbs_wa,
+    'NT': suburbs_nt,
+    'TAS': suburbs_tas
+    }
+
+states = (
+    'NSW',
+    'VIC',
+    'QLD',
+    'ACT',
+    'SA',
+    'WA',
+    'NT',
+    'TAS'
+    )
+
+clues = (
+    'electricians+electrical+contractors',
+    'plumbers+gas+fitters',
+    )
+
+def get_suburbs():
+    return suburbs
+
+def get_states():
+    return states
+
+def get_clues():
+    return clues
