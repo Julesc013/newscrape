@@ -10,7 +10,11 @@ from math import ceil
 from time import time, sleep
 from datetime import datetime, date, time, timedelta
 import list_data # The file containing the lists of suburbs (in the same directory)
-import smtplib
+import smtplib 
+from email.mime.multipart import MIMEMultipart 
+from email.mime.text import MIMEText 
+from email.mime.base import MIMEBase 
+from email import encoders 
 
 
 class listing: # Record structure to hold new listings found on each page.
@@ -110,10 +114,15 @@ suburbs = list_data.get_suburbs() # Suburbs (as a disctionary of tuples)
 logs_path = r"/home/webscraper/Documents/Newscrape/Logs/"
 results_path = r"/home/webscraper/Documents/Newscrape/Results/"
 
-all_path = results_path + "all_results.xlsx"
-all_backup_path = results_path + "all_results_" + time_atm_string + ".xlsx.bak"
-new_path = results_path + "new_results_" + time_atm_string + ".xlsx"
-template_path = results_path + "new_results_template.xlsx"
+all_file = "all_results.xlsx"
+all_backup_file = "all_results_" + time_atm_string + ".xlsx.bak"
+new_file = "new_results_" + time_atm_string + ".xlsx"
+template_file = "new_results_template.xlsx"
+
+all_path = results_path + all_file
+all_backup_path = results_path + all_backup_file
+new_path = results_path + new_file
+template_path = results_path + template_file
 
 # Declare lists that will hold listing records.
 listings = []
@@ -532,34 +541,66 @@ new_listings_count = sheet_index_new - final_row_new
 
 console_action("Emailing results", "")
 
-start_time_string = start_time.strftime("%d %B")
-emailing_time_string = datetime.date.today().strftime("%d %B")
-
-sent_from = email_sender
-to = [email_recipient]
-subject = 'New Listings from ' + start_time_string + ' to ' + emailing_time_string
-body = 'Number of new listings: ' + str(new_listings_count)
-
-email_text = """\
-From: %s
-To: %s
-Subject: %s
-
-%s
-""" % (sent_from, ", ".join(to), subject, body)
 
 try:
-    server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-    server.ehlo()
-    server.login(email_sender, email_password)
-    server.sendmail(sent_from, to, email_text)
-    server.close()
+
+    # instance of MIMEMultipart 
+    msg = MIMEMultipart() 
+    # attach the body with the msg instance 
+    msg.attach(MIMEText(body, 'plain')) 
+
+    # storing the senders email address   
+    msg['From'] = email_sender 
+    # storing the receivers email address  
+    msg['To'] = email_recipient 
+
+
+    # string to store the body of the mail 
+    body = 'Number of new listings: ' + str(new_listings_count)
+
+    # storing the subject  
+    start_time_string = start_time.strftime("%d %B")
+    emailing_time_string = datetime.date.today().strftime("%d %B")
+    msg['Subject'] = 'New Listings from ' + start_time_string + ' to ' + emailing_time_string
+
+
+    # open the file to be sent  
+    filename = new_file
+    attachment = open(results_path, "rb") 
+
+    # instance of MIMEBase and named as mime
+    mime = MIMEBase('application', 'octet-stream') 
+    # To change the payload into encoded form 
+    mime.set_payload((attachment).read()) 
+    # encode into base64 
+    encoders.encode_base64(mime) 
+    mime.add_header('Content-Disposition', "attachment; filename= %s" % filename) 
+    # attach the instance 'mime' to instance 'msg' 
+    msg.attach(mime)
+    # creates SMTP session 
+    smtp = smtplib.SMTP('smtp.gmail.com', 587) 
+    # start TLS for security 
+    smtp.starttls() 
+
+    # Authentication 
+    smtp.login(email_sender, email_password) 
+
+    # Converts the Multipart msg into a string 
+    text = msg.as_string() 
+
+    # sending the mail 
+    smtp.sendmail(email_sender, email_recipient, text) 
+
 
     console_complete(True, "Success")
 
 except Exception as ex:
 
     console_complete(False, "Failed (" + str(ex) + ")")
+
+
+# terminating the session (ALWAYS DO THIS)
+smtp.quit()
 
 
 
