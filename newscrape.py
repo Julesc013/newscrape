@@ -546,8 +546,6 @@ try:
 
     # instance of MIMEMultipart 
     msg = MIMEMultipart() 
-    # attach the body with the msg instance 
-    msg.attach(MIMEText(body, 'plain')) 
 
     # storing the senders email address   
     msg['From'] = email_sender 
@@ -557,6 +555,8 @@ try:
 
     # string to store the body of the mail 
     body = 'Number of new listings: ' + str(new_listings_count)
+    # attach the body with the msg instance 
+    msg.attach(MIMEText(body, 'plain')) 
 
     # storing the subject  
     start_time_string = start_time.strftime("%d %B")
