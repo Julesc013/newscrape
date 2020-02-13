@@ -90,14 +90,14 @@ def find_match(sheet, column, text): # Search the existing data for matches... i
 
 # Define variables
 
-version = "1.3.0"
+version = "1.4.0"
 
 time_atm = datetime.now() # Get time stamp for output files
 time_atm_string = time_atm.strftime("%d%m%Y_%H%M%S")
 
 # Email details
 email_sender = 'newscrape.listings@gmail.com'
-email_password = 'lettuce5'
+email_password = 'lettuce5' # If the credentials are denied, go to this address to: https://myaccount.google.com/lesssecureapps?pli=1
 email_recipient = 'newscrape.listings@gmail.com'
 
 
@@ -560,13 +560,13 @@ try:
 
     # storing the subject  
     start_time_string = start_time.strftime("%d %B")
-    emailing_time_string = datetime.date.today().strftime("%d %B")
+    emailing_time_string = datetime.now().strftime("%d %B")
     msg['Subject'] = 'New Listings from ' + start_time_string + ' to ' + emailing_time_string
 
 
     # open the file to be sent  
     filename = new_file
-    attachment = open(results_path, "rb") 
+    attachment = open(new_path, "rb") 
 
     # instance of MIMEBase and named as mime
     mime = MIMEBase('application', 'octet-stream') 
@@ -592,11 +592,11 @@ try:
     smtp.sendmail(email_sender, email_recipient, text) 
 
 
-    console_complete(True, "Success")
+    console_complete("Success", True)
 
 except Exception as ex:
 
-    console_complete(False, "Failed (" + str(ex) + ")")
+    console_complete("Failed (" + str(ex) + ")", False)
 
 
 # terminating the session (ALWAYS DO THIS)
