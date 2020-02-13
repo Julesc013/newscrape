@@ -10,6 +10,7 @@ from math import ceil
 from time import time, sleep
 from datetime import datetime, date, time, timedelta
 import list_data # The file containing the lists of suburbs (in the same directory)
+import smtplib
 
 
 class listing: # Record structure to hold new listings found on each page.
@@ -90,6 +91,12 @@ version = "1.3.0"
 time_atm = datetime.now() # Get time stamp for output files
 time_atm_string = time_atm.strftime("%d%m%Y_%H%M%S")
 
+# Email details
+email_sender = 'newscrape.listings@gmail.com'
+email_password = 'lettuce5'
+email_recipient = 'newscrape.listings@gmail.com'
+
+
 # Set capabilities of the firefox driver (specifically that it is allowed to ignore SSL/insecurity warnings)
 browser_capabilities = DesiredCapabilities.FIREFOX.copy()
 browser_capabilities['accept_untrusted_certs'] = True
@@ -141,8 +148,8 @@ console_message("Created new log file " + log_file_name)
 
 total_clues = len(clues)
 pages_multiplier = 1.0185 # Add 1.85% (derived from test data)
-time_per_search = 10.3 # On average 10.3002 seconds per search (time per clue is 16.75hrs)
-time_per_check = 2 # NOT A REAL VALUE, ONLY AN ESTIMATE, REPLACE LATER
+time_per_search = 11.8041 # Experimental value from first actual run
+time_per_check = 1.0673 # NOT A REAL VALUE, ONLY AN ESTIMATE, REPLACE LATER
 time_per_rank = 0 #TEMPVAR (ASIC RANKING) # CURRENTLY 0 BECAUSE NOT IMPLEMENTED
 
 total_suburbs = 0
@@ -415,7 +422,8 @@ while index <= listings_count - 1:
     this_yellow_page = business.yellow_pages_link
 
     # Search the sheet of all listings to see if it already exists
-    this_name_exists = find_match(sheet_all, "A", this_name)
+    #this_name_exists = find_match(sheet_all, "A", this_name)
+    this_name_exists = False # ALWAYS RETURN FALSE, WE WANT TO IGNORE THIS CHECK
     this_phone_exists = find_match(sheet_all, "B", this_phone)
     this_email_exists = find_match(sheet_all, "C", this_email)
     this_website_exists = find_match(sheet_all, "D", this_website)
@@ -495,16 +503,49 @@ time_checking_done = datetime.now() # The time at which all the checking was com
 
 # EMAIL THE SHEETS.
 
-
-
-
-# Calculate and print statistics
-
+# Calculate listings totals
 #total_pages_count = pages_counter
 total_listings_count = len(listings)
 #new_listings_count = len(new_listings)
 new_listings_count = sheet_index_new - final_row_new
 #all_listings_count = sheet_index_all - final_row_all #same as tot_list_count
+
+
+console_action("Emailing results", "")
+
+start_time_string = start_time.strftime("%d %B")
+emailing_time_string = datetime.date.today().strftime("%d %B")
+
+sent_from = email_sender
+to = [email_recipient]
+subject = 'New Listings from ' + start_time_string + ' to ' + emailing_time_string
+body = 'Number of new listings: ' + str(new_listings_count)
+
+email_text = """\
+From: %s
+To: %s
+Subject: %s
+
+%s
+""" % (sent_from, ", ".join(to), subject, body)
+
+try:
+    server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+    server.ehlo()
+    server.login(email_sender, email_password)
+    server.sendmail(sent_from, to, email_text)
+    server.close()
+
+    console_complete(True, "Success")
+
+except Exception as ex:
+
+    console_complete(False, "Failed (" + str(ex) + ")")
+
+
+
+# Calculate and print statistics
+# (Already calulated listings totals)
 
 finish_time = datetime.now()
 total_duration = finish_time - start_time
