@@ -200,291 +200,310 @@ pages_counter = 0
 
 # Loop through each, clue, state, suburb, and page.
 
-for clue in clues:
+try:
 
-    for state in states:
+    for clue in clues:
 
-        for suburb in suburbs[state]: # Only the suburbs in this state
+        for state in states:
 
-            suburbs_counter += 1
+            for suburb in suburbs[state]: # Only the suburbs in this state
 
-            # Reset page numbers file
-            pages_number = -1
+                suburbs_counter += 1
 
-            # Loop through all pages
-            page = 1
-            while ( (page <= pages_number or pages_number == -1) and page <= 8):
-                
-                print() # Add an empty line (to the terminal printout only) to make it more readable at a glance # DEBUG
+                # Reset page numbers file
+                pages_number = -1
 
-                pages_counter += 1
+                # Loop through all pages
+                page = 1
+                while ( (page <= pages_number or pages_number == -1) and page <= 8):
+                    
+                    print() # Add an empty line (to the terminal printout only) to make it more readable at a glance # DEBUG
 
-
-                # Construct the url
-                web_address = address_base[0] + clue + address_base[1] + str(page) + address_base[2] + state + address_base[3] + suburb + address_base[4] + state
+                    pages_counter += 1
 
 
-                # Get the html for this page
-                while True: # Loop forever until successful
-                    try:
-                        
-                        # Get time values for the console display
-                        percentage_complete = (suburbs_counter / total_searches) * 100
-                        time_remaining = expected_duration - (suburbs_counter * time_per_search)
-                        #time_remaining_timedelta = timedelta(seconds=time_remaining)
-
-                        progress_stamp = "[" + str(round(percentage_complete, 2)) + "% T-" + format_time_seconds(time_remaining) + "] "
-                        console_action(progress_stamp + "Getting", web_address)
-                
-                        browser.get(web_address) # Get the webpage from the Internet
-                        #WebDriverWait(driver, 30).until(readystate_complete) # Wait until the page is fully loaded
-
-                        html_source = browser.page_source # Get the source from the browser driver
-
-                        console_complete("Done", True)
-                        break
-
-                    except KeyboardInterrupt:
-
-                        console_complete("Skipped", False)
-                        #IN FUTURE MAKE IT SO: Stop trying to download this page and skip the rest of this iteration (return to top of outer while loop)
-
-                        exit() # Exit the entire program as a ^C normally would
-
-                    except Exception as ex:
-
-                        console_complete("Failed (" + str(ex) + ")", False) # Display error message (details)
+                    # Construct the url
+                    web_address = address_base[0] + clue + address_base[1] + str(page) + address_base[2] + state + address_base[3] + suburb + address_base[4] + state
 
 
-                        # Reinitialise the selenium webdriver to circumvent certificate errors
-                        console_action("Restarting web driver", "")
-
-                        browser.quit() # Gracefully quit driver
-                        browser = webdriver.Firefox(capabilities=browser_capabilities) # Restart the driver
-                        
-                        console_complete("Done", True)
-
-
-                        # Wait ten seconds before retrying
-                        #sleep(10)
-
-
-
-                console_action("Parsing and extracting HTML code", "")
-
-                soup = BeautifulSoup(html_source, 'html.parser')
-                listings_html = soup.find_all("div", attrs={"class": "listing listing-search listing-data"})
-
-                console_complete("Done", True)
-
-                # If the number of pages hasn't been retrieved, get it from the page just downloaded
-                if pages_number == -1:
-
-                    console_action("Finding number of pages", "")
-
-                    try:
+                    # Get the html for this page
+                    while True: # Loop forever until successful
+                        try:
                             
-                        # Extract the number of results
-                        results_number_parent = soup.find("div", attrs={"class": "cell search-message first-cell"})
-                        results_number_html = results_number_parent.find("span", attrs={"class": "emphasise"})
-                        results_number = int(results_number_html.text.split()[0])
+                            # Get time values for the console display
+                            percentage_complete = (suburbs_counter / total_searches) * 100
+                            time_remaining = expected_duration - (suburbs_counter * time_per_search)
+                            #time_remaining_timedelta = timedelta(seconds=time_remaining)
 
-                        # Do the math
-                        if results_number >= 1 and results_number <= 1500:
+                            progress_stamp = "[" + str(round(percentage_complete, 2)) + "% T-" + format_time_seconds(time_remaining) + "] "
+                            console_action(progress_stamp + "Getting", web_address)
+                    
+                            browser.get(web_address) # Get the webpage from the Internet
+                            #WebDriverWait(driver, 30).until(readystate_complete) # Wait until the page is fully loaded
 
-                            pages_number = int(ceil(results_number / 35.0))
+                            html_source = browser.page_source # Get the source from the browser driver
 
                             console_complete("Done", True)
+                            break
+
+                        except KeyboardInterrupt:
+
+                            console_complete("Skipped", False)
+                            #IN FUTURE MAKE IT SO: Stop trying to download this page and skip the rest of this iteration (return to top of outer while loop)
+
+                            exit() # Exit the entire program as a ^C normally would
+
+                        except Exception as ex:
+
+                            console_complete("Failed (" + str(ex) + ")", False) # Display error message (details)
+
+
+                            # Reinitialise the selenium webdriver to circumvent certificate errors
+                            console_action("Restarting web driver", "")
+
+                            browser.quit() # Gracefully quit driver
+                            browser = webdriver.Firefox(capabilities=browser_capabilities) # Restart the driver
                             
-                        else:
-
-                            pages_number = -1
-
-                            console_complete("Unreasonable result", False)
-                        
-                    except:
-
-                        pages_number = 0
-
-                        console_complete("Failed (assuming zero results)", False)
+                            console_complete("Done", True)
 
 
-                # Gather all listings' data and check if they have already been identified.
-
-                for listing_html in listings_html:
-
-                    console_action("Extracting listing", listing_html.get('data-listing-name'))
-
-                    ## Make links absolute
-                    base_url = "https://www.yellowpages.com.au"
-                    #listing_html.make_links_absolute(base_url)
+                            # Wait ten seconds before retrying
+                            #sleep(10)
 
 
-                    # Reset variables
-                    business_name_html = None
-                    phone_number_html = None
-                    email_address_html = None
-                    business_website_html = None
-                    name = None
-                    phone = None
-                    email = None
-                    website = None
-                    yellow_page = None
 
-                    # Get the html data of each match.
-                    business_name_html = listing_html.find("a", attrs={"class": "listing-name"})
-                    #phone_number_html = listing_html.find("a", attrs={"class": "click-to-call contact contact-preferred contact-phone"})
-                    phone_number_html = listing_html.find("a", attrs={"class": lambda x: x and 'click-to-call contact contact-preferred' in x})
-                    email_address_html = listing_html.find("a", attrs={"class": "contact contact-main contact-email"})
-                    business_website_html = listing_html.find("a", attrs={"class": "contact contact-main contact-url"})
+                    console_action("Parsing and extracting HTML code", "")
 
-
-                    # Extract the appropriate sections of each html element.
-
-                    # Get sections (only if they exist)
-                    if business_name_html is not None:
-                        name = business_name_html.text
-                    if phone_number_html is not None:
-                        phone = phone_number_html.get('href')
-                    if email_address_html is not None:
-                        email = email_address_html.get('data-email')
-                    if business_website_html is not None:
-                        website = business_website_html.get('href')
-                    if business_name_html is not None:
-                        yellow_page = business_name_html.get('href') # Link to the Yellow Pages listing.
-
-                    # Add sections to a record
-                    record = listing(name, phone, email, website, base_url + yellow_page)
-                    #record = listing(name, phone, email, base_url + yellow_page) # Use the YP listing instead of the actual website temporarily.
-                    # Append this record to the list of listings
-                    listings.append(record)
-
+                    soup = BeautifulSoup(html_source, 'html.parser')
+                    listings_html = soup.find_all("div", attrs={"class": "listing listing-search listing-data"})
 
                     console_complete("Done", True)
 
+                    # If the number of pages hasn't been retrieved, get it from the page just downloaded
+                    if pages_number == -1:
 
-                page += 1 # Increment page number
+                        console_action("Finding number of pages", "")
+
+                        try:
+                                
+                            # Extract the number of results
+                            results_number_parent = soup.find("div", attrs={"class": "cell search-message first-cell"})
+                            results_number_html = results_number_parent.find("span", attrs={"class": "emphasise"})
+                            results_number = int(results_number_html.text.split()[0])
+
+                            # Do the math
+                            if results_number >= 1 and results_number <= 1500:
+
+                                pages_number = int(ceil(results_number / 35.0))
+
+                                console_complete("Done", True)
+                                
+                            else:
+
+                                pages_number = -1
+
+                                console_complete("Unreasonable result", False)
+                            
+                        except:
+
+                            pages_number = 0
+
+                            console_complete("Failed (assuming zero results)", False)
 
 
-browser.quit() # Gracefully quit driver, all done getting pages
+                    # Gather all listings' data and check if they have already been identified.
+
+                    for listing_html in listings_html:
+
+                        console_action("Extracting listing", listing_html.get('data-listing-name'))
+
+                        ## Make links absolute
+                        base_url = "https://www.yellowpages.com.au"
+                        #listing_html.make_links_absolute(base_url)
+
+
+                        # Reset variables
+                        business_name_html = None
+                        phone_number_html = None
+                        email_address_html = None
+                        business_website_html = None
+                        name = None
+                        phone = None
+                        email = None
+                        website = None
+                        yellow_page = None
+
+                        # Get the html data of each match.
+                        business_name_html = listing_html.find("a", attrs={"class": "listing-name"})
+                        #phone_number_html = listing_html.find("a", attrs={"class": "click-to-call contact contact-preferred contact-phone"})
+                        phone_number_html = listing_html.find("a", attrs={"class": lambda x: x and 'click-to-call contact contact-preferred' in x})
+                        email_address_html = listing_html.find("a", attrs={"class": "contact contact-main contact-email"})
+                        business_website_html = listing_html.find("a", attrs={"class": "contact contact-main contact-url"})
+
+
+                        # Extract the appropriate sections of each html element.
+
+                        # Get sections (only if they exist)
+                        if business_name_html is not None:
+                            name = business_name_html.text
+                        if phone_number_html is not None:
+                            phone = phone_number_html.get('href')
+                        if email_address_html is not None:
+                            email = email_address_html.get('data-email')
+                        if business_website_html is not None:
+                            website = business_website_html.get('href')
+                        if business_name_html is not None:
+                            yellow_page = business_name_html.get('href') # Link to the Yellow Pages listing.
+
+                        # Add sections to a record
+                        record = listing(name, phone, email, website, base_url + yellow_page)
+                        #record = listing(name, phone, email, base_url + yellow_page) # Use the YP listing instead of the actual website temporarily.
+                        # Append this record to the list of listings
+                        listings.append(record)
+
+
+                        console_complete("Done", True)
+
+
+                    page += 1 # Increment page number
+
+except Exception as ex:
+
+    # If any shit hits the fan, stop searching and move onto checking so that we at least don't lose the listings we have
+
+    console_message("Searching interrupted unexpectedly (" + str(ex) + ")")
+
+
+browser.quit() # Gracefully quit driver, all done getting pages (ALWAYS DO THIS)
+
 
 time_searching_done = datetime.now() # The time at which all the downloading and searching was completed
 
 
+
 # Check if each business listing already exists in our local database
 
+try:
 
-# Load all-results worksheet
+    # Load all-results worksheet
 
-console_action("Loading worksheets", "")
+    console_action("Loading worksheets", "")
 
-book_all = load_workbook(filename = all_path) # Load the workbook
-sheet_all = book_all['Sheet1'] # Load the worksheet
+    book_all = load_workbook(filename = all_path) # Load the workbook
+    sheet_all = book_all['Sheet1'] # Load the worksheet
 
-book_new = load_workbook(filename = new_path) # Load the workbook
-sheet_new = book_new['Sheet1'] # Load the worksheet
+    book_new = load_workbook(filename = new_path) # Load the workbook
+    sheet_new = book_new['Sheet1'] # Load the worksheet
 
-console_complete("Done", True)
-
-
-# Get the last row in the sheet
-final_row_all = sheet_all.max_row
-final_row_new = 1 #sheet_new.max_row # Always start at the top of the sheet
+    console_complete("Done", True)
 
 
-# Calculate the expected time remaining
-expected_duration_remaining = expected_duration - (expected_searches * time_per_search)
+    # Get the last row in the sheet
+    final_row_all = sheet_all.max_row
+    final_row_new = 1 #sheet_new.max_row # Always start at the top of the sheet
 
 
-# Loop through each newly retrieved record
-
-index = 0
-# Use seperate indexes for sheets so that no rows are skipped in the spreadsheet
-sheet_index_all = final_row_all
-sheet_index_new = final_row_new
-
-listings_count = len(listings) # For each listing gathered
-while index <= listings_count - 1:
-
-    business = listings[index]
-
-    # Get time values for the console display
-    percentage_complete = (index / listings_count) * 100
-    time_remaining = expected_duration_remaining - (index * time_per_check)
-
-    progress_stamp = "[" + str(round(percentage_complete, 2)) + "% T-" + format_time_seconds(time_remaining) + "] "
-    console_action(progress_stamp + "Checking", business.business_name)
-
-    this_name = business.business_name
-    this_phone = business.phone_number
-    this_email = business.email_address
-    this_website = business.business_website
-    this_yellow_page = business.yellow_pages_link
-
-    # Search the sheet of all listings to see if it already exists
-    #this_name_exists = find_match(sheet_all, "A", this_name)
-    this_name_exists = False # ALWAYS RETURN FALSE, WE WANT TO IGNORE THIS CHECK
-    this_phone_exists = find_match(sheet_all, "B", this_phone)
-    this_email_exists = find_match(sheet_all, "C", this_email)
-    this_website_exists = find_match(sheet_all, "D", this_website)
-    this_yellow_page_exists = find_match(sheet_all, "E", this_yellow_page)
-
-    if this_name_exists or this_phone_exists or this_email_exists or this_website_exists or this_yellow_page_exists: # If any of the searches returned a True result for existence
-
-        console_complete("Already exists", False)
-
-        # Keep sheet indexes the same
-
-    else:
-
-        console_complete("Found new listing", True)
-
-        # Add the new listing to all-results spreadsheet
-
-        # Using the old max row as a base get the next row number to write to
-        # AKA Increment the indexes for this new row
-        sheet_index_all += 1
-        sheet_index_new += 1
-
-        console_action("Adding", business.business_name + " to spreadsheets")
+    # Calculate the expected time remaining
+    expected_duration_remaining = expected_duration - (expected_searches * time_per_search)
 
 
-        # Add to all listings sheet
-        sheet_all.cell(row=sheet_index_all, column=1).value = this_name # Name
-        sheet_all.cell(row=sheet_index_all, column=2).value = this_phone # Phone
-        sheet_all.cell(row=sheet_index_all, column=3).value = this_email # Email
-        sheet_all.cell(row=sheet_index_all, column=4).value = this_website # Website
-        sheet_all.cell(row=sheet_index_all, column=5).value = this_yellow_page # Yellow Page
+    # Loop through each newly retrieved record
+
+    index = 0
+    # Use seperate indexes for sheets so that no rows are skipped in the spreadsheet
+    sheet_index_all = final_row_all
+    sheet_index_new = final_row_new
+
+    listings_count = len(listings) # For each listing gathered
+    while index <= listings_count - 1:
+
+        business = listings[index]
+
+        # Get time values for the console display
+        percentage_complete = (index / listings_count) * 100
+        time_remaining = expected_duration_remaining - (index * time_per_check)
+
+        progress_stamp = "[" + str(round(percentage_complete, 2)) + "% T-" + format_time_seconds(time_remaining) + "] "
+        console_action(progress_stamp + "Checking", business.business_name)
+
+        this_name = business.business_name
+        this_phone = business.phone_number
+        this_email = business.email_address
+        this_website = business.business_website
+        this_yellow_page = business.yellow_pages_link
+
+        # Search the sheet of all listings to see if it already exists
+        #this_name_exists = find_match(sheet_all, "A", this_name)
+        this_name_exists = False # ALWAYS RETURN FALSE, WE WANT TO IGNORE THIS CHECK
+        this_phone_exists = find_match(sheet_all, "B", this_phone)
+        this_email_exists = find_match(sheet_all, "C", this_email)
+        this_website_exists = find_match(sheet_all, "D", this_website)
+        this_yellow_page_exists = find_match(sheet_all, "E", this_yellow_page)
+
+        if this_name_exists or this_phone_exists or this_email_exists or this_website_exists or this_yellow_page_exists: # If any of the searches returned a True result for existence
+
+            console_complete("Already exists", False)
+
+            # Keep sheet indexes the same
+
+        else:
+
+            console_complete("Found new listing", True)
+
+            # Add the new listing to all-results spreadsheet
+
+            # Using the old max row as a base get the next row number to write to
+            # AKA Increment the indexes for this new row
+            sheet_index_all += 1
+            sheet_index_new += 1
+
+            console_action("Adding", business.business_name + " to spreadsheets")
 
 
-        ##console_action("Getting ASIC data for", business.business_name)
-
-        ####### GET ASIC DATA!!!!!!!!!!!!!!!!!!
-        # GET ASIC (ABN/ACN) DETAILS and SORT NEW LISTINGS BASED ON IF THEY HAVE A WEBSITE/ABN/ACN ((SEE ABOVE--GOES INSIDE FOR LOOP)).
-        # ADD ASIC RANKING TO TIME CALCULATIONS
-        #### Use the data in an algorithm to produce a ranking!!!
-
-
-        # Add to new listings sheet
-        sheet_new.cell(row=sheet_index_new, column=1).value = this_name # Name
-        sheet_new.cell(row=sheet_index_new, column=2).value = this_phone # Phone
-        sheet_new.cell(row=sheet_index_new, column=3).value = this_email # Email
-        sheet_new.cell(row=sheet_index_new, column=4).value = this_website # Website
-        sheet_new.cell(row=sheet_index_new, column=5).value = this_yellow_page # Yellow Page
+            # Add to all listings sheet
+            sheet_all.cell(row=sheet_index_all, column=1).value = this_name # Name
+            sheet_all.cell(row=sheet_index_all, column=2).value = this_phone # Phone
+            sheet_all.cell(row=sheet_index_all, column=3).value = this_email # Email
+            sheet_all.cell(row=sheet_index_all, column=4).value = this_website # Website
+            sheet_all.cell(row=sheet_index_all, column=5).value = this_yellow_page # Yellow Page
 
 
-        # Save the changes to the files
-        book_all.save(all_path)
-        book_new.save(new_path)
+            ##console_action("Getting ASIC data for", business.business_name)
+
+            ####### GET ASIC DATA!!!!!!!!!!!!!!!!!!
+            # GET ASIC (ABN/ACN) DETAILS and SORT NEW LISTINGS BASED ON IF THEY HAVE A WEBSITE/ABN/ACN ((SEE ABOVE--GOES INSIDE FOR LOOP)).
+            # ADD ASIC RANKING TO TIME CALCULATIONS
+            #### Use the data in an algorithm to produce a ranking!!!
 
 
-        console_complete("Done", True)
+            # Add to new listings sheet
+            sheet_new.cell(row=sheet_index_new, column=1).value = this_name # Name
+            sheet_new.cell(row=sheet_index_new, column=2).value = this_phone # Phone
+            sheet_new.cell(row=sheet_index_new, column=3).value = this_email # Email
+            sheet_new.cell(row=sheet_index_new, column=4).value = this_website # Website
+            sheet_new.cell(row=sheet_index_new, column=5).value = this_yellow_page # Yellow Page
 
 
-    index += 1 # Increment index (b/c not using a for loop)
+            # Save the changes to the files
+            book_all.save(all_path)
+            book_new.save(new_path)
 
 
-console_action("Saving spreadsheets", "")
+            console_complete("Done", True)
+
+
+        index += 1 # Increment index (b/c not using a for loop)
+
+
+except Exception as ex:
+
+    # If any shit hits the fan, stop checking and move onto emailing so that we at least don't lose the listings we have
+
+    console_message("Checking interrupted unexpectedly (" + str(ex) + ")")
+
+
+# Save all changes
+console_action("Saving spreadsheets", "") # ALWAYS DO THIS
 
 # Save the changes to the files
 book_all.save(all_path)
