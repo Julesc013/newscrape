@@ -98,7 +98,8 @@ time_atm_string = time_atm.strftime("%d%m%Y_%H%M%S")
 # Email details
 email_sender = 'newscrape.listings@gmail.com'
 email_password = 'lettuce5' # If the credentials are denied, go to this address to: https://myaccount.google.com/lesssecureapps?pli=1
-email_recipient = 'newscrape.listings@gmail.com'
+email_self = 'newscrape.listings@gmail.com'
+email_client = 'cam@camilloventura.com'
 
 
 # Set capabilities of the firefox driver (specifically that it is allowed to ignore SSL/insecurity warnings)
@@ -529,83 +530,13 @@ time_checking_done = datetime.now() # The time at which all the checking was com
 
 
 
-# EMAIL THE SHEETS.
+# Calculate statistics
 
-# Calculate listings totals
 #total_pages_count = pages_counter
 total_listings_count = len(listings)
 #new_listings_count = len(new_listings)
 new_listings_count = sheet_index_new - final_row_new
 #all_listings_count = sheet_index_all - final_row_all #same as tot_list_count
-
-
-console_action("Emailing results", "")
-
-
-try:
-
-    # instance of MIMEMultipart 
-    msg = MIMEMultipart() 
-
-    # storing the senders email address   
-    msg['From'] = email_sender 
-    # storing the receivers email address  
-    msg['To'] = email_recipient 
-
-
-    # string to store the body of the mail 
-    body = 'Number of new listings: ' + str(new_listings_count)
-    # attach the body with the msg instance 
-    msg.attach(MIMEText(body, 'plain')) 
-
-    # storing the subject  
-    start_time_string = start_time.strftime("%d %B")
-    emailing_time_string = datetime.now().strftime("%d %B")
-    msg['Subject'] = 'New Listings from ' + start_time_string + ' to ' + emailing_time_string
-
-
-    # open the file to be sent  
-    filename = new_file
-    attachment = open(new_path, "rb") 
-
-    # instance of MIMEBase and named as mime
-    mime = MIMEBase('application', 'octet-stream') 
-    # To change the payload into encoded form 
-    mime.set_payload((attachment).read()) 
-    # encode into base64 
-    encoders.encode_base64(mime) 
-    mime.add_header('Content-Disposition', "attachment; filename= %s" % filename) 
-    # attach the instance 'mime' to instance 'msg' 
-    msg.attach(mime)
-    # creates SMTP session 
-    smtp = smtplib.SMTP('smtp.gmail.com', 587) 
-    # start TLS for security 
-    smtp.starttls() 
-
-    # Authentication 
-    smtp.login(email_sender, email_password) 
-
-    # Converts the Multipart msg into a string 
-    text = msg.as_string() 
-
-    # sending the mail 
-    smtp.sendmail(email_sender, email_recipient, text) 
-
-
-    console_complete("Success", True)
-
-except Exception as ex:
-
-    console_complete("Failed (" + str(ex) + ")", False)
-
-
-# terminating the session (ALWAYS DO THIS)
-smtp.quit()
-
-
-
-# Calculate and print statistics
-# (Already calulated listings totals)
 
 finish_time = datetime.now()
 total_duration = finish_time - start_time
@@ -619,8 +550,8 @@ time_per_search_actual = time_searching_duration / expected_searches
 time_per_check_actual = time_checking_duration / total_listings_count
 #time_per_rank_actual = time_ranking_duration / new_listings_count
 
-console_message("Calculated actual results..." + "\n" \
-    "Total pages: " + str(pages_counter) + "\n" \
+
+results_message = ("Total pages: " + str(pages_counter) + "\n" \
     "Total listings: " + str(total_listings_count) + "\n" \
     "Total new listings: " + str(new_listings_count) + "\n" \
     "Duration of searching: " + str(time_searching_duration) + "\n" \
@@ -632,4 +563,82 @@ console_message("Calculated actual results..." + "\n" \
     "Time per search: " + str(time_per_search_actual) + "\n" \
     "Time per check: " + str(time_per_check_actual) \
     #"Time per rank: " + str(time_per_rank_actual) \
-    )
+)
+
+
+
+# EMAIL THE SHEETS.
+
+
+for email_recipient in (email_self, email_client):
+
+    console_action("Emailing results", "to " + email_recipient)
+
+    try:
+
+        # instance of MIMEMultipart 
+        msg = MIMEMultipart() 
+
+        # storing the senders email address   
+        msg['From'] = email_sender 
+        # storing the receivers email address  
+        msg['To'] = email_recipient 
+
+
+        # string to store the body of the mail
+        if email_recipient == email_self:
+            body = results_message
+        else:
+            body = 'Number of new listings: ' + str(new_listings_count) + "\n" + "Results attached."
+        # attach the body with the msg instance 
+        msg.attach(MIMEText(body, 'plain')) 
+
+        # storing the subject  
+        start_time_string = start_time.strftime("%d %B")
+        emailing_time_string = datetime.now().strftime("%d %B")
+        msg['Subject'] = 'New Listings from ' + start_time_string + ' to ' + emailing_time_string
+
+
+        # open the file to be sent  
+        filename = new_file
+        attachment = open(new_path, "rb") 
+
+        # instance of MIMEBase and named as mime
+        mime = MIMEBase('application', 'octet-stream') 
+        # To change the payload into encoded form 
+        mime.set_payload((attachment).read()) 
+        # encode into base64 
+        encoders.encode_base64(mime) 
+        mime.add_header('Content-Disposition', "attachment; filename= %s" % filename) 
+        # attach the instance 'mime' to instance 'msg' 
+        msg.attach(mime)
+        # creates SMTP session 
+        smtp = smtplib.SMTP('smtp.gmail.com', 587) 
+        # start TLS for security 
+        smtp.starttls() 
+
+        # Authentication 
+        smtp.login(email_sender, email_password) 
+
+        # Converts the Multipart msg into a string 
+        text = msg.as_string() 
+
+        # sending the mail 
+        smtp.sendmail(email_sender, email_recipient, text) 
+
+
+        console_complete("Success", True)
+
+    except Exception as ex:
+
+        console_complete("Failed (" + str(ex) + ")", False)
+
+
+    # terminating the session (ALWAYS DO THIS)
+    smtp.quit()
+
+
+
+# Print stats
+
+console_message("Calculated actual results..." + "\n" + results_message)
