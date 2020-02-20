@@ -626,17 +626,21 @@ while True:
                 msg['To'] = email_recipient 
 
 
+
                 # string to store the body of the mail
+
+                next_finish_time = str(finish_time + total_duration)
+
                 if email_recipient == email_self:
-                    body = results_message
+                    body = results_message + "\n\n" + "New list expected by: " + next_finish_time
                 else:
-                    body = 'Number of new listings: ' + str(new_listings_count) + "\n" + "Results attached."
+                    body = "Number of new listings: " + str(new_listings_count) + "\n\n" + "New list expected by: " + next_finish_time
                 # attach the body with the msg instance 
                 msg.attach(MIMEText(body, 'plain')) 
 
                 # storing the subject  
-                start_time_string = start_time.strftime("%d %B")
-                emailing_time_string = datetime.now().strftime("%d %B")
+                start_time_string = start_time.strftime("%d %b")
+                emailing_time_string = datetime.now().strftime("%d %b")
                 msg['Subject'] = 'New Listings from ' + start_time_string + ' to ' + emailing_time_string
 
 
