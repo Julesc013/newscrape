@@ -98,7 +98,7 @@ year_copyright = "2020"
 email_sender = 'newscrape.listings@gmail.com'
 email_password = 'lettuce5' # If the credentials are denied, go to this address to: https://myaccount.google.com/lesssecureapps?pli=1
 email_self = 'newscrape.listings@gmail.com'
-email_client = 'cam@camilloventura.com'
+email_client = "julescarboni013@gmail.com" #'cam@camilloventura.com'
 
 # File paths
 logs_path = r"/home/webscraper/Documents/Newscrape/Logs/"
@@ -129,7 +129,7 @@ input("\n" + "Press Enter/Return key to begin...")
 
 # Get current time for uptime calculations
 time_start_uptime = datetime.now()
-runs_completed = 0
+runs_completed = -1
 
 # This loop runs forever (until interrupted via keyboard)
 while True:
@@ -138,9 +138,14 @@ while True:
     time_start_run = datetime.now()
     time_uptime = time_start_run - time_start_uptime # Final minus initial
     
+    # Update number of completed runs
+    runs_completed += 1
+
+    print()
     print("Running Newcrape...")
     print("Run: " + str(runs_completed + 1) + " (" + str(runs_completed) + " completed)")
     print("Uptime: " + str(time_uptime))
+    print()
     
     
     # Try to complete a run, if failed (expt. keyb-int): notify self by email (incl. error message) and start the next run.
@@ -148,6 +153,11 @@ while True:
         
 
         # Declare session specific variables
+
+
+        # Get current time
+        time_atm = datetime.now() # Get time stamp for output files
+        time_atm_string = time_atm.strftime("%d%m%Y_%H%M%S")
 
         # Get current session's file names
         all_file = "all_results.xlsx"
@@ -160,9 +170,6 @@ while True:
         new_path = results_path + new_file
         template_path = results_path + template_file
 
-        # Get current time
-        time_atm = datetime.now() # Get time stamp for output files
-        time_atm_string = time_atm.strftime("%d%m%Y_%H%M%S")
 
         # Declare list(s) that will hold listing records.
         listings = []
@@ -269,7 +276,9 @@ while True:
 
 
                             # Get the html for this page
-                            while True: # Loop forever until successful
+                            trying_saving = True
+                            while trying_saving == True: # Loop forever until successful
+
                                 try:
 
                                     # Get time values for the console display
@@ -288,12 +297,12 @@ while True:
                                     console_complete("Done", True)
                                     break
 
-                                except KeyboardInterrupt:
+                                #except KeyboardInterrupt:
 
-                                    console_complete("Skipped", False)
-                                    #IN FUTURE MAKE IT SO: Stop trying to download this page and skip the rest of this iteration (return to top of outer while loop)
+                                #    console_complete("Skipped", False)
 
-                                    exit() # Exit the entire program as a ^C normally would
+                                #    # Stop trying to download this page and skip the rest of this iteration (return to top of outer while loop)
+                                #    trying_saving = False
 
                                 except Exception as ex:
 
@@ -683,19 +692,22 @@ while True:
             
         # Ask if the interruptor would like to quit the program immediately OR start the next run.
         
-        print("\n" + "Keyboard interrupt detected.")
+        print("\n")
+        print("Keyboard interrupt detected.")
         choice = input("To quit Newscrape enter \"quit\", or enter anything else to begin the next run: ")
         
-        if choice.lower() == "quit": # Only exit if above condition met.
+        if "quit" in choice.lower(): # Only exit if above condition met.
             exit()
-           
-    except run_ex as Exception:
+
+    except Exception as run_ex:
         
         # For any other exception, email the error code to self, then start the next run.
         
         crash_time = datetime.now() # Get the time of the crash
         crash_time_string_short = crash_time.strftime("%d/%m/%Y %H:%M:%S")
         crash_time_string_long = crash_time.strftime("%c")
+
+        print("Error caught (" + str(run_ex) + ").")
         
         try: # Try to send the email, if it doesn't work, just go to the next run
 
@@ -719,16 +731,15 @@ while True:
             # Get error message details
             error_message = str(run_ex)
         
-            body_message = ("Newscrape – Crash/Error Report", \
-                            "", \
-                            "Version: " + version, \
-                            "Time:    " + crash_time_string_long, \
-                            "Uptime:  " + str(time_uptime), \
-                            "Run:     " + str(runs_completed + 1) + " (" + str(runs_completed) + " completed)", \
-                            "", \
-                            "Exception details:", \
-                            error_message, \
-                            sep="\n")
+            body_message = ("Newscrape – Crash/Error Report" + "\n"
+                            "\n"
+                            "Version: " + version + "\n"
+                            "Time:    " + crash_time_string_long + "\n"
+                            "Uptime:  " + str(time_uptime) + "\n"
+                            "Run:     " + str(runs_completed + 1) + " (" + str(runs_completed) + " completed)" + "\n"
+                            "\n"
+                            "Exception details:" + "\n"
+                            "" + error_message + "\n")
     
             
             body = body_message
