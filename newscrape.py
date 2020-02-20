@@ -153,7 +153,7 @@ while True:
     print()
     print("Running Newcrape...")
     print("Run: " + str(runs_completed + 1) + " (" + str(runs_completed) + " completed)")
-    print("Uptime: " + str(time_uptime) + " (" + time_uptime.days + " days)")
+    print("Uptime: " + str(time_uptime) + " (" + str(time_uptime.days) + " days)")
     print()
     
     
