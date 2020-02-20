@@ -109,6 +109,15 @@ clues = list_data.get_clues() # Clues (as a tuple)
 states = list_data.get_states() # States (as a tuple)
 suburbs = list_data.get_suburbs() # Suburbs (as a disctionary of tuples)
 
+# Time calculation estimates
+time_per_search = 4.588641 # Experimental value from first actual run
+time_per_check = 0.880478 # NOT A REAL VALUE, ONLY AN ESTIMATE, REPLACE LATER
+time_per_rank = 0 #TEMPVAR (ASIC RANKING) # CURRENTLY 0 BECAUSE NOT IMPLEMENTED
+
+pages_multiplier = 1.0185 # Add 1.85% (derived from test data)
+checks_multiplier = 4.273
+ranks_multiplier = 0.05
+
 # Web address template
 address_base = ("https://www.yellowpages.com.au/search/listings?clue=", "&eventType=pagination&openNow=false&pageNumber=", "&referredBy=UNKNOWN&&state=", "&suburb=", "+") # [0], clue, [1], page, [2] state, [3] suburb+state)
 # Set capabilities of the firefox driver (specifically that it is allowed to ignore SSL/insecurity warnings)
@@ -144,7 +153,7 @@ while True:
     print()
     print("Running Newcrape...")
     print("Run: " + str(runs_completed + 1) + " (" + str(runs_completed) + " completed)")
-    print("Uptime: " + str(time_uptime))
+    print("Uptime: " + str(time_uptime) + " (" + time_uptime.days + " days)")
     print()
     
     
@@ -196,18 +205,14 @@ while True:
         # Count total pages to search through
 
         total_clues = len(clues)
-        pages_multiplier = 1.0185 # Add 1.85% (derived from test data)
-        time_per_search = 11.8041 # Experimental value from first actual run
-        time_per_check = 1.0673 # NOT A REAL VALUE, ONLY AN ESTIMATE, REPLACE LATER
-        time_per_rank = 0 #TEMPVAR (ASIC RANKING) # CURRENTLY 0 BECAUSE NOT IMPLEMENTED
 
         total_suburbs = 0
         for state in states:
             total_suburbs += len(suburbs[state]) # Add up all the suburbs
         total_searches = total_suburbs * total_clues # Multiply by the number of times we have to fetch from each suburb
         expected_searches = total_searches * pages_multiplier # Multiply to get add the amount of pages we expect to be in total
-        checks_per_clue = 4.273 * total_suburbs * pages_multiplier # A really rough average
-        ranks_per_clue = 0.05 * total_suburbs * pages_multiplier #TEMPVAR (ASIC RANKING)
+        checks_per_clue = checks_multiplier * total_suburbs * pages_multiplier # A really rough average
+        ranks_per_clue = ranks_multiplier * total_suburbs * pages_multiplier #TEMPVAR (ASIC RANKING)
         total_checks = checks_per_clue * total_clues
         total_ranks = ranks_per_clue * total_clues
 
