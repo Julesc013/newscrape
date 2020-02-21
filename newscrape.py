@@ -110,9 +110,9 @@ states = list_data.get_states() # States (as a tuple)
 suburbs = list_data.get_suburbs() # Suburbs (as a disctionary of tuples)
 
 # Time calculation estimates
-time_per_search = 4.588641 # Experimental value from first actual run
-time_per_check = 0.880478 # NOT A REAL VALUE, ONLY AN ESTIMATE, REPLACE LATER
-time_per_rank = 0 #TEMPVAR (ASIC RANKING) # CURRENTLY 0 BECAUSE NOT IMPLEMENTED
+time_per_search = 4.0 # Experimental value from first actual run
+time_per_check = 0.8 # NOT A REAL VALUE, ONLY AN ESTIMATE, REPLACE LATER
+time_per_rank = 0.0 #TEMPVAR (ASIC RANKING) # CURRENTLY 0 BECAUSE NOT IMPLEMENTED
 
 pages_multiplier = 1.0185 # Add 1.85% (derived from test data)
 checks_multiplier = 4.273
@@ -607,7 +607,8 @@ while True:
         # Prediction for duration of next run
         next_expected_duration = expected_searches * time_per_search + total_checks * time_per_check + total_ranks * time_per_rank # Calculate the expected total duration of the program
         next_expected_duration_timedelta = timedelta(seconds=next_expected_duration)
-        next_finish_time = str(finish_time + next_expected_duration_timedelta)
+        next_finish_time = finish_time + next_expected_duration_timedelta
+        next_finish_time_string = next_finish_time.strftime("%c")
 
 
 
@@ -619,7 +620,7 @@ while True:
             #"Duration of ranking: " + str(time_ranking_duration) + "\n" \
             "Total duration: " + str(total_duration) + "\n" \
             "Expected duration: " + str(expected_duration_timedelta) + "\n" \
-            "Difference from expected: " + str(difference_duration) + "\n" \
+            "Difference from expected: " + difference_duration.strftime("%H:%M:%S") + "\n" \
             "Time per search: " + str(time_per_search_actual) + "\n" \
             "Time per check: " + str(time_per_check_actual) \
             #"Time per rank: " + str(time_per_rank_actual) \
@@ -649,9 +650,9 @@ while True:
                 # string to store the body of the mail
 
                 if email_recipient == email_self:
-                    body = results_message + "\n\n" + "New list expected by: " + next_finish_time
+                    body = results_message + "\n\n" + "New list expected by: " + next_finish_time_string
                 else:
-                    body = "Number of new listings: " + str(new_listings_count) + "\n\n" + "New list expected by: " + next_finish_time
+                    body = "Number of new listings: " + str(new_listings_count) + "\n\n" + "New list expected by: " + next_finish_time_string
                 # attach the body with the msg instance 
                 msg.attach(MIMEText(body, 'plain')) 
 
