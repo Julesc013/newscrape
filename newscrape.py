@@ -91,7 +91,7 @@ def find_match(sheet, column, text): # Search the existing data for matches... i
 # Define variables
 
 # File version information
-version = "1.6.1"
+version = "1.6.2"
 year_copyright = "2020"
 
 # Email details
@@ -597,6 +597,20 @@ while True:
         #time_per_rank_actual = time_ranking_duration / new_listings_count
 
 
+
+        # Update the calculation times by averaging the expected and actual values
+        time_per_search = (time_per_search + time_per_search_actual) / 2
+        time_per_check = (time_per_check + time_per_check_actual) / 2
+        #time_per_rank = (time_per_rank + time_per_rank_actual) / 2
+
+
+        # Prediction for duration of next run
+        next_expected_duration = expected_searches * time_per_search + total_checks * time_per_check + total_ranks * time_per_rank # Calculate the expected total duration of the program
+        next_expected_duration_timedelta = timedelta(seconds=next_expected_duration)
+        next_finish_time = str(finish_time + next_expected_duration_timedelta)
+
+
+
         results_message = ("Total pages: " + str(pages_counter) + "\n" \
             "Total listings: " + str(total_listings_count) + "\n" \
             "Total new listings: " + str(new_listings_count) + "\n" \
@@ -633,8 +647,6 @@ while True:
 
 
                 # string to store the body of the mail
-
-                next_finish_time = str(finish_time + total_duration)
 
                 if email_recipient == email_self:
                     body = results_message + "\n\n" + "New list expected by: " + next_finish_time
