@@ -476,8 +476,10 @@ while True:
                 business = listings[index]
 
                 # Get time values for the console display
-                percentage_complete = (index / listings_count) * 100
-                time_remaining = expected_duration_remaining - (index * time_per_check)
+                decimal_complete = index / listings_count
+                percentage_complete = (decimal_complete) * 100
+                #time_remaining = expected_duration_remaining - (index * time_per_check)
+                time_remaining = expected_duration_remaining * (1 - decimal_complete)
 
                 progress_stamp = "[" + str(round(percentage_complete, 2)) + "% T-" + format_time_seconds(time_remaining) + "] "
                 console_action(progress_stamp + "Checking", business.business_name)
