@@ -138,7 +138,7 @@ input("\n" + "Press Enter/Return key to begin...")
 
 # Get current time for uptime calculations
 time_start_uptime = datetime.now()
-runs_completed = -1
+runs_completed = 0
 
 # This loop runs forever (until interrupted via keyboard)
 while True:
@@ -147,12 +147,10 @@ while True:
     time_start_run = datetime.now()
     time_uptime = time_start_run - time_start_uptime # Final minus initial
     
-    # Update number of completed runs
-    runs_completed += 1
 
     print()
     print("Running Newcrape...")
-    print("Run: " + str(runs_completed + 1) + " (" + str(runs_completed) + " completed)")
+    print("Run: " + str(runs_completed + 1) + " (" + str(runs_completed) + " successful)")
     print("Uptime: " + str(time_uptime) + " (" + str(time_uptime.days) + " days)")
     print()
     
@@ -707,6 +705,13 @@ while True:
 
 
 
+        # Update number of completed runs
+        runs_completed += 1
+
+        console_message("Updated completed runs counter (" + runs_completed + " successful).")
+
+
+
         # Print stats
 
         console_message("Calculated actual results..." + "\n" + results_message)
@@ -782,7 +787,7 @@ while True:
                             "Version: " + version + "\n"
                             "Time: " + crash_time_string_long + "\n"
                             "Uptime: " + str(time_uptime) + " (" + str(time_uptime.days) + " days)" + "\n"
-                            "Run: " + str(runs_completed + 1) + " (" + str(runs_completed) + " completed)" + "\n"
+                            "Run: " + str(runs_completed + 1) + " (" + str(runs_completed) + " successful)" + "\n"
                             "\n"
                             "Exception details:" + "\n"
                             "" + error_message + "\n")
