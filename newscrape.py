@@ -573,6 +573,9 @@ while True:
         console_complete("Done", True)
 
 
+        print() # Add an empty line (to the terminal printout only) to make it more readable at a glance # DEBUG
+
+
         time_checking_done = datetime.now() # The time at which all the checking was completed (incl. writing to the all-spreadsheet)
 
         #time_ranking_done = datetime.now() # The time at which all the ranking (with ASIC) was completed (incl. writing to the new spreadsheet)
@@ -595,9 +598,9 @@ while True:
         time_checking_duration = time_checking_done - time_searching_done
         #time_ranking_duration = time_ranking_done - time_checking_done
 
-        time_per_search_actual = time_searching_duration / expected_searches
-        time_per_check_actual = time_checking_duration / total_listings_count
-        #time_per_rank_actual = time_ranking_duration / new_listings_count
+        time_per_search_actual = time_searching_duration.total_seconds() / expected_searches
+        time_per_check_actual = time_checking_duration.total_seconds() / total_listings_count
+        #time_per_rank_actual = time_ranking_duration.total_seconds() / new_listings_count
 
 
 
@@ -801,7 +804,7 @@ while True:
             
             
             # storing the subject
-            msg['Subject'] = 'Newscrape Crash Report ' + crash_time_string_short
+            msg['Subject'] = 'Crash Report ' + crash_time_string_short
 
 
             
