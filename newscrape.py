@@ -91,7 +91,7 @@ def find_match(sheet, column, text): # Search the existing data for matches... i
 # Define variables
 
 # File version information
-version = "1.6.2"
+version = "1.6.4"
 year_copyright = "2020"
 
 # Email details
@@ -441,6 +441,9 @@ while True:
 
         try:
 
+            print() # Add an empty line (to the terminal printout only) to make it more readable at a glance # DEBUG
+
+
             # Load all-results worksheet
 
             console_action("Loading worksheets", "")
@@ -717,10 +720,20 @@ while True:
         # Ask if the interruptor would like to quit the program immediately OR start the next run.
         
         print("\n")
-        print("Keyboard interrupt detected.")
+
+        # Try to write this action to file (if the file exists basically).
+        try:
+            console_message("Keyboard interrupt detected")
+        except:
+            print("Keyboard interrupt detected.")
+
         choice = input("To quit Newscrape enter \"quit\", or enter anything else to begin the next run: ")
         
         if "quit" in choice.lower(): # Only exit if above condition met.
+            try:
+                console_message("Quit Newscrape manually")
+            except:
+                pass
             exit()
 
     except Exception as run_ex:
@@ -731,8 +744,17 @@ while True:
         crash_time_string_short = crash_time.strftime("%d/%m/%Y %H:%M:%S")
         crash_time_string_long = crash_time.strftime("%c")
 
-        print("Error caught (" + str(run_ex) + ").")
-        
+        try:
+            console_message("Caught error (" + str(run_ex) + ")")
+        except:
+            print("Caught error (" + str(run_ex) + ").")
+
+
+        try:
+            console_action("Emailing crash report", "to " + email_self)
+        except:
+            pass
+    
         try: # Try to send the email, if it doesn't work, just go to the next run
 
             # instance of MIMEMultipart 
@@ -753,14 +775,14 @@ while True:
             time_uptime = time_crash_run - time_start_uptime # Final minus initial
     
             # Get error message details
-            error_message = str(run_ex)
+            error_message = repr(run_ex)
         
             body_message = ("Newscrape – Crash/Error Report" + "\n"
                             "\n"
                             "Version: " + version + "\n"
-                            "Time:    " + crash_time_string_long + "\n"
-                            "Uptime:  " + str(time_uptime) + "\n"
-                            "Run:     " + str(runs_completed + 1) + " (" + str(runs_completed) + " completed)" + "\n"
+                            "Time: " + crash_time_string_long + "\n"
+                            "Uptime: " + str(time_uptime) + " (" + str(time_uptime.days) + " days)" + "\n"
+                            "Run: " + str(runs_completed + 1) + " (" + str(runs_completed) + " completed)" + "\n"
                             "\n"
                             "Exception details:" + "\n"
                             "" + error_message + "\n")
@@ -807,11 +829,18 @@ while True:
             smtp.sendmail(email_sender, email_self, text) 
 
 
-            print("Successfully sent error report.")
+            try:
+                console_complete("Success", True)
+            except:
+                print("Successfully sent error report.")
 
         except Exception as ex:
 
-            print("Failed to send error report (" + str(ex) + ").")
+            try:
+                console_complete("Failed (" + str(ex) + ").", False)
+            except:
+                print("Failed to send error report (" + str(ex) + ").")
+
 
 
         # terminating the session (ALWAYS DO THIS)
