@@ -91,7 +91,7 @@ def find_match(sheet, column, text): # Search the existing data for matches... i
 # Define variables
 
 # File version information
-version = "1.6.4"
+version = "1.6.5"
 year_copyright = "2020"
 
 # Email details
@@ -615,6 +615,7 @@ while True:
         next_expected_duration_timedelta = timedelta(seconds=next_expected_duration)
         next_finish_time = finish_time + next_expected_duration_timedelta
         next_finish_time_string = next_finish_time.strftime("%c")
+        #next_finish_time_string = str(next_finish_time)
 
 
 
@@ -626,7 +627,8 @@ while True:
             #"Duration of ranking: " + str(time_ranking_duration) + "\n" \
             "Total duration: " + str(total_duration) + "\n" \
             "Expected duration: " + str(expected_duration_timedelta) + "\n" \
-            "Difference from expected: " + difference_duration.strftime("%H:%M:%S") + "\n" \
+            #"Difference from expected: " + difference_duration.strftime("%H:%M:%S") + "\n" \
+            "Difference from expected: " + str(difference_duration) + "\n" \
             "Time per search: " + str(time_per_search_actual) + "\n" \
             "Time per check: " + str(time_per_check_actual) \
             #"Time per rank: " + str(time_per_rank_actual) \
@@ -711,7 +713,9 @@ while True:
         # Update number of completed runs
         runs_completed += 1
 
-        console_message("Updated completed runs counter (" + runs_completed + " successful).")
+        print() # Add an empty line (to the terminal printout only) to make it more readable at a glance # DEBUG
+
+        console_message("Updated completed runs counter (" + str(runs_completed) + " successful)")
 
 
 
