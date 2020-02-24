@@ -802,7 +802,7 @@ while True:
             text = msg.as_string() 
 
             # sending the mail 
-            smtp.sendmail(email_sender, email_recipient, text) 
+            smtp.sendmail(email_sender, email_self, text) 
 
 
             print("Successfully sent error report.")
