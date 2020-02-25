@@ -103,7 +103,7 @@ email_client = "julescarboni013@gmail.com" #'cam@camilloventura.com'
 
 # VPN data
 vpn_country_code = "au"
-vpn_server_offset = 120 # Added to server index to bring into working range (au204 to au512)
+vpn_server_offset = 210 # Added to server index to bring into working range (au204 to au512)
 # rest of vpn variables declared below
 
 # File paths
@@ -264,7 +264,7 @@ while True:
 
         # Start the vpn service and log into a server.
         this_vpn_server = vpn_country_code + str(vpn_server_index + vpn_server_offset)
-        console_action("Connecting to VPN server", this_vpn_server)
+        console_action("Connecting to VPN server", this_vpn_server.upper())
         os.system("sudo openpyn -s " + this_vpn_server + " --daemon")
         console_complete("Done", True)
 
@@ -353,7 +353,6 @@ while True:
 
                                     console_complete("Done", True)
 
-
                                     # Wait ten seconds before retrying
                                     #sleep(10)
 
@@ -367,25 +366,41 @@ while True:
                             console_complete("Done", True)
 
 
-                            # Check that the page isn't a "no robots" block page
+                            # Check that the page isn't a "no robots" block page.
 
-                            if True:
+                            console_action("Checking if current IP is blocked", "")
 
-                                # Restart the vpn service with a new server.
+                            # Try to get the html data (if can't get it, then its all fine so give up).
+                            try:
+                                robot_check_parent = soup.find("div", attrs={"style": "padding-top: 10px;"})
+                                robot_check_html = robot_check_parent.find("h1", attrs={"style": "font-weight: normal;"})
+                                robot_check_text = robot_check_html.text
 
-                                # Get new index (THIS IS REPEATED CODE! CONSOLIDATE INTO A FUNCTION LATER)     
-                                if not 0 <= vpn_server_index <= 300:
-                                    vpn_server_index = 0
-                                else:
-                                    vpn_server_index += 1
+                                if "detected unusual traffic" in robot_check_text.lower():
 
-                                # Connect to the new server
-                                this_vpn_server = vpn_country_code + str(vpn_server_index + vpn_server_offset)
-                                console_action("Failed to bypass robot check... Connecting to new VPN server", this_vpn_server)
-                                os.system("sudo openpyn -s " + this_vpn_server + " --daemon")
-                                console_complete("Done", True)
+                                    console_complete("Blocked", False)
 
+                                    # Restart the vpn service with a new server.
 
+                                    # Get new index (THIS IS REPEATED CODE! CONSOLIDATE INTO A FUNCTION LATER)     
+                                    if not 0 <= vpn_server_index <= 300:
+                                        vpn_server_index = 0
+                                    else:
+                                        vpn_server_index += 1
+
+                                    # Connect to the new server
+                                    this_vpn_server = vpn_country_code + str(vpn_server_index + vpn_server_offset)
+                                    console_action("Connecting to new VPN server", this_vpn_server.upper())
+                                    os.system("sudo openpyn -s " + this_vpn_server + " --daemon")
+                                    console_complete("Done", True)
+
+                                    # Update forced vpn change counter.
+                                    vpn_forced_changes += 1
+
+                            except:
+                                console_complete("Fine", True)
+
+                            
 
                             # If the number of pages hasn't been retrieved, get it from the page just downloaded
                             if pages_number == -1:
@@ -823,6 +838,9 @@ while True:
 
     except Exception as run_ex:
         
+        #console_message("") # Always print the error message on a new line.
+        print("\n") # Add an empty line (to the terminal printout only) to make it more readable at a glance # DEBUG
+
         # For any other exception, email the error code to self, then start the next run.
         
         crash_time = datetime.now() # Get the time of the crash
