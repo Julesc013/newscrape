@@ -138,11 +138,15 @@ input("\n" + "Press Enter/Return key to begin...")
 
 # Get current time for uptime calculations
 time_start_uptime = datetime.now()
-runs_completed = 0
+runs_completed = -1
+runs_successful = 0
 
 # This loop runs forever (until interrupted via keyboard)
 while True:
     
+    runs_completed += 1
+
+
     # Get timedelta for uptime
     time_start_run = datetime.now()
     time_uptime = time_start_run - time_start_uptime # Final minus initial
@@ -150,7 +154,7 @@ while True:
 
     print()
     print("Running Newcrape...")
-    print("Run: " + str(runs_completed + 1) + " (" + str(runs_completed) + " successful)")
+    print("Run: " + str(runs_completed + 1) + " (" + str(runs_successful) + " successful)")
     print("Uptime: " + str(time_uptime) + " (" + str(time_uptime.days) + " days)")
     print()
     
@@ -158,6 +162,7 @@ while True:
     # Try to complete a run, if failed (expt. keyb-int): notify self by email (incl. error message) and start the next run.
     try:
         
+
 
         # Declare session specific variables
 
@@ -711,11 +716,11 @@ while True:
 
 
         # Update number of completed runs
-        runs_completed += 1
+        runs_successful += 1
 
         print() # Add an empty line (to the terminal printout only) to make it more readable at a glance # DEBUG
 
-        console_message("Updated completed runs counter (" + str(runs_completed) + " successful)")
+        console_message("Updated successful runs counter (" + str(runs_successful) + " successful)")
 
 
 
@@ -794,7 +799,7 @@ while True:
                             "Version: " + version + "\n"
                             "Time: " + crash_time_string_long + "\n"
                             "Uptime: " + str(time_uptime) + " (" + str(time_uptime.days) + " days)" + "\n"
-                            "Run: " + str(runs_completed + 1) + " (" + str(runs_completed) + " successful)" + "\n"
+                            "Run: " + str(runs_completed + 1) + " (" + str(runs_successful) + " successful)" + "\n"
                             "\n"
                             "Exception details:" + "\n"
                             "" + error_message + "\n")
