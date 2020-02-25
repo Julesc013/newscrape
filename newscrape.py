@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+import openpyn
 from math import ceil
 from time import time, sleep
 from datetime import datetime, date, time, timedelta
@@ -91,7 +92,7 @@ def find_match(sheet, column, text): # Search the existing data for matches... i
 # Define variables
 
 # File version information
-version = "1.6.5"
+version = "1.7.0"
 year_copyright = "2020"
 
 # Email details
@@ -99,6 +100,11 @@ email_sender = 'newscrape.listings@gmail.com'
 email_password = 'lettuce5' # If the credentials are denied, go to this address to: https://myaccount.google.com/lesssecureapps?pli=1
 email_self = 'newscrape.listings@gmail.com'
 email_client = "julescarboni013@gmail.com" #'cam@camilloventura.com'
+
+# VPN data
+vpn_country_code = "au"
+vpn_server_offset = 120 # Added to server index to bring into working range (au204 to au512)
+# rest of vpn variables declared below
 
 # File paths
 logs_path = r"/home/webscraper/Documents/Newscrape/Logs/"
@@ -136,15 +142,28 @@ print("\n" + "NEWSCRAPE – Yellow Pages Web-Scraper", \
 input("\n" + "Press Enter/Return key to begin...")
 
 
-# Get current time for uptime calculations
+
+# Get current time for uptime calculations and count runs completed
+
 time_start_uptime = datetime.now()
+
 runs_completed = -1
 runs_successful = 0
+
+vpn_server_index = -1 # Index for the current vpn server in use (can change mid-run)
+vpn_forced_changes = 0
+
 
 # This loop runs forever (until interrupted via keyboard)
 while True:
     
+    
     runs_completed += 1
+
+    if not 0 <= vpn_server_index <= 300: # If the index is not in the range of 0 to 300, then reset it to zero, else increment it to the next index.
+        vpn_server_index = 0
+    else:
+        vpn_server_index += 1
 
 
     # Get timedelta for uptime
@@ -243,10 +262,19 @@ while True:
         console_complete("Done", True)
 
 
+        # Start the vpn service and log into a server.
+        this_vpn_server = vpn_country_code + str(vpn_server_index + vpn_server_offset)
+        console_action("Connecting to VPN server", this_vpn_server)
+        os.system("sudo openpyn -s " + this_vpn_server + " --daemon")
+        console_complete("Done", True)
+
 
         # Initialise the selenium webdriver
+        console_action("Initialising Selenium webdriver", "")
         browser = webdriver.Firefox(capabilities=browser_capabilities)
         webdriver.Firefox.quit
+        console_complete("Done", True)
+
 
 
         # Download and extract data from every page!
@@ -337,6 +365,27 @@ while True:
                             listings_html = soup.find_all("div", attrs={"class": "listing listing-search listing-data"})
 
                             console_complete("Done", True)
+
+
+                            # Check that the page isn't a "no robots" block page
+
+                            if True:
+
+                                # Restart the vpn service with a new server.
+
+                                # Get new index (THIS IS REPEATED CODE! CONSOLIDATE INTO A FUNCTION LATER)     
+                                if not 0 <= vpn_server_index <= 300:
+                                    vpn_server_index = 0
+                                else:
+                                    vpn_server_index += 1
+
+                                # Connect to the new server
+                                this_vpn_server = vpn_country_code + str(vpn_server_index + vpn_server_offset)
+                                console_action("Failed to bypass robot check... Connecting to new VPN server", this_vpn_server)
+                                os.system("sudo openpyn -s " + this_vpn_server + " --daemon")
+                                console_complete("Done", True)
+
+
 
                             # If the number of pages hasn't been retrieved, get it from the page just downloaded
                             if pages_number == -1:
@@ -623,13 +672,17 @@ while True:
         #next_finish_time_string = str(next_finish_time)
 
 
+        # Get timedelta for uptime
+        time_uptime = finish_time - time_start_uptime # Final minus initial
+    
 
         status_message = ("Newscrape – Results Report" + "\n"
                             "\n"
                             "Version: " + version + "\n"
-                            "Time: " + crash_time_string_long + "\n"
+                            "Time: " + finish_time.strftime("%c") + "\n"
                             "Uptime: " + str(time_uptime) + " (" + str(time_uptime.days) + " days)" + "\n"
-                            "Run: " + str(runs_completed + 1) + " (" + str(runs_successful) + " successful)" + "\n")
+                            "Run: " + str(runs_completed + 1) + " (" + str(runs_successful) + " successful)" + "\n"
+                            "VPN: " + vpn_country_code + str(vpn_server_index + vpn_server_offset) + " (" + str(vpn_forced_changes) + " forced changes)" + "\n")
 
         results_message = ("Total pages: " + str(pages_counter) + "\n" \
             "Total listings: " + str(total_listings_count) + "\n" \
@@ -764,7 +817,9 @@ while True:
                 console_message("Quit Newscrape manually")
             except:
                 pass
-            exit()
+
+            exit() # Quit (close selenium/browser but not openvpn/nordvpn)
+
 
     except Exception as run_ex:
         
@@ -803,7 +858,8 @@ while True:
             # Get timedelta for uptime
             time_crash_run = datetime.now()
             time_uptime = time_crash_run - time_start_uptime # Final minus initial
-    
+
+
             # Get error message details
             error_message = repr(run_ex)
         
@@ -813,6 +869,7 @@ while True:
                             "Time: " + crash_time_string_long + "\n"
                             "Uptime: " + str(time_uptime) + " (" + str(time_uptime.days) + " days)" + "\n"
                             "Run: " + str(runs_completed + 1) + " (" + str(runs_successful) + " successful)" + "\n"
+                            "VPN: " + vpn_country_code + str(vpn_server_index + vpn_server_offset) + " (" + str(vpn_forced_changes) + " forced changes)" + "\n"
                             "\n"
                             "Exception details:" + "\n"
                             "" + error_message + "\n")
