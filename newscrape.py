@@ -262,7 +262,12 @@ while True:
         console_complete("Done", True)
 
 
-        # Start the vpn service and log into a server.
+        # Close any existing VPN services.
+        console_action("Quitting existing VPN connections", "")
+        os.system("sudo openpyn -x")
+        console_complete("Done", True)
+
+        # Start the VPN service and log into a server.
         this_vpn_server = vpn_country_code + str(vpn_server_index + vpn_server_offset)
         console_action("Connecting to VPN server", this_vpn_server.upper())
         os.system("sudo openpyn -s " + this_vpn_server + " --daemon")
