@@ -624,6 +624,13 @@ while True:
 
 
 
+        status_message = ("Newscrape – Results Report" + "\n"
+                            "\n"
+                            "Version: " + version + "\n"
+                            "Time: " + crash_time_string_long + "\n"
+                            "Uptime: " + str(time_uptime) + " (" + str(time_uptime.days) + " days)" + "\n"
+                            "Run: " + str(runs_completed + 1) + " (" + str(runs_successful) + " successful)" + "\n")
+
         results_message = ("Total pages: " + str(pages_counter) + "\n" \
             "Total listings: " + str(total_listings_count) + "\n" \
             "Total new listings: " + str(new_listings_count) + "\n" \
@@ -635,10 +642,12 @@ while True:
             #"Difference from expected: " + difference_duration.strftime("%H:%M:%S") + "\n" \
             "Difference from expected: " + str(difference_duration) + "\n" \
             "Time per search: " + str(time_per_search_actual) + "\n" \
-            "Time per check: " + str(time_per_check_actual) \
-            #"Time per rank: " + str(time_per_rank_actual) \
+            "Time per check: " + str(time_per_check_actual) + "\n" \
+            #"Time per rank: " + str(time_per_rank_actual) + "\n" \
         )
 
+        next_finish_message = "New list expected by: " + next_finish_time_string
+        
 
 
         # EMAIL THE SHEETS.
@@ -663,11 +672,13 @@ while True:
                 # string to store the body of the mail
 
                 if email_recipient == email_self:
-                    body = results_message + "\n\n" + "New list expected by: " + next_finish_time_string
+                    body = status_message + "\n" + results_message + "\n" + next_finish_message
                 else:
-                    body = "Number of new listings: " + str(new_listings_count) + "\n\n" + "New list expected by: " + next_finish_time_string
+                    body = "Number of new listings: " + str(new_listings_count) + "\n\n" + next_finish_message
+
                 # attach the body with the msg instance 
                 msg.attach(MIMEText(body, 'plain')) 
+
 
                 # storing the subject  
                 start_time_string = start_time.strftime("%d %b")
@@ -675,9 +686,11 @@ while True:
                 msg['Subject'] = 'New Listings from ' + start_time_string + ' to ' + emailing_time_string
 
 
+
                 # open the file to be sent  
                 filename = new_file
                 attachment = open(new_path, "rb") 
+
 
                 # instance of MIMEBase and named as mime
                 mime = MIMEBase('application', 'octet-stream') 
