@@ -141,7 +141,7 @@ print("\n" + "NEWSCRAPE – Yellow Pages Web-Scraper", \
     "Jules Carboni, Copyright " + year_copyright + ", Version " + version, \
     sep="\n")
 
-input("\n" + "Press Enter/Return key to begin...")
+input("\n" + "Press Enter/Return key to begin (wait for password prompt please)...")
 
 
 
