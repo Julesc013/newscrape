@@ -8,6 +8,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 import openpyn
 from math import ceil
+import random
 from time import time, sleep
 from datetime import datetime, date, time, timedelta
 import list_data # The file containing the lists of suburbs (in the same directory)
@@ -104,6 +105,7 @@ email_client = "julescarboni013@gmail.com" #'cam@camilloventura.com'
 # VPN data
 vpn_country_code = "au"
 vpn_server_offset = 210 # Added to server index to bring into working range (au204 to au512)
+vpn_server_maximum = 300 # Maximum number of servers that exist for this country (must be offset for use).
 # rest of vpn variables declared below
 
 # File paths
@@ -150,7 +152,7 @@ time_start_uptime = datetime.now()
 runs_completed = -1
 runs_successful = 0
 
-vpn_server_index = -1 # Index for the current vpn server in use (can change mid-run)
+vpn_server_index = random.randint(0, vpn_server_maximum) # Randomly get for the current vpn server in use (can change mid-run)
 vpn_forced_changes = 0
 
 
@@ -160,10 +162,10 @@ while True:
     
     runs_completed += 1
 
-    if not 0 <= vpn_server_index <= 300: # If the index is not in the range of 0 to 300, then reset it to zero, else increment it to the next index.
-        vpn_server_index = 0
-    else:
+    if 0 <= vpn_server_index < vpn_server_maximum: # If the index is between 0 to Max (300), then increment it to the next index, else reset it to zero.
         vpn_server_index += 1
+    else:
+        vpn_server_index = 0
 
 
     # Get timedelta for uptime
@@ -388,10 +390,10 @@ while True:
                                     # Restart the vpn service with a new server.
 
                                     # Get new index (THIS IS REPEATED CODE! CONSOLIDATE INTO A FUNCTION LATER)     
-                                    if not 0 <= vpn_server_index <= 300:
-                                        vpn_server_index = 0
-                                    else:
+                                    if 0 <= vpn_server_index < vpn_server_maximum:
                                         vpn_server_index += 1
+                                    else:
+                                        vpn_server_index = 0
 
                                     # Connect to the new server
                                     this_vpn_server = vpn_country_code + str(vpn_server_index + vpn_server_offset)
