@@ -319,8 +319,7 @@ while True:
 
 
                             # Get the html for this page
-                            trying_saving = True
-                            while trying_saving == True: # Loop forever until successful
+                            while True: # Loop forever until successful
 
                                 try:
 
@@ -338,7 +337,68 @@ while True:
                                     html_source = browser.page_source # Get the source from the browser driver
 
                                     console_complete("Done", True)
-                                    break
+
+
+
+                                    # Extract the HTML
+
+                                    console_action("Parsing and extracting HTML code", "")
+
+                                    soup = BeautifulSoup(html_source, 'html.parser')
+                                    listings_html = soup.find_all("div", attrs={"class": "listing listing-search listing-data"})
+
+                                    console_complete("Done", True)
+
+
+
+                                    # Check that the page isn't a "no robots" block page.
+
+                                    console_action("Checking if current IP is blocked", "")
+
+                                    # Try to get the html data (if can't get it, then its all fine so give up).
+                                    try:
+                                        robot_check_parent = soup.find("div", attrs={"style": "padding-top: 10px;"})
+                                        robot_check_html = robot_check_parent.find("h1", attrs={"style": "font-weight: normal;"})
+                                        robot_check_text = robot_check_html.text
+
+                                        if "detected unusual traffic" in robot_check_text.lower():
+
+                                            console_complete("Blocked", False)
+
+                                            # Restart the vpn service with a new server.
+
+                                            # Get new index (THIS IS REPEATED CODE! CONSOLIDATE INTO A FUNCTION LATER)     
+                                            if 0 <= vpn_server_index < vpn_server_maximum:
+                                                vpn_server_index += 1
+                                            else:
+                                                vpn_server_index = 0
+
+                                            # Connect to the new server
+                                            this_vpn_server = vpn_country_code + str(vpn_server_index + vpn_server_offset)
+
+                                            console_action("Connecting to new VPN server", this_vpn_server.upper())
+
+                                            os.system("sudo openpyn -s " + this_vpn_server + " --daemon")
+
+                                            console_complete("Done", True)
+
+                                            # Update forced vpn change counter.
+                                            vpn_forced_changes += 1
+
+                                        else: # If did not find "blocked message" (but also didnt encounter any errors), break out of the loop
+
+                                            console_complete("Connected", False)
+
+                                            break
+
+                                    except:
+
+                                        # If all fine (not blocked), don't try to get the page again (break out).
+
+                                        console_complete("Connected", True)
+
+                                        break
+
 
                                 #except KeyboardInterrupt:
 
@@ -364,48 +424,6 @@ while True:
                                     #sleep(10)
 
 
-
-                            console_action("Parsing and extracting HTML code", "")
-
-                            soup = BeautifulSoup(html_source, 'html.parser')
-                            listings_html = soup.find_all("div", attrs={"class": "listing listing-search listing-data"})
-
-                            console_complete("Done", True)
-
-
-                            # Check that the page isn't a "no robots" block page.
-
-                            console_action("Checking if current IP is blocked", "")
-
-                            # Try to get the html data (if can't get it, then its all fine so give up).
-                            try:
-                                robot_check_parent = soup.find("div", attrs={"style": "padding-top: 10px;"})
-                                robot_check_html = robot_check_parent.find("h1", attrs={"style": "font-weight: normal;"})
-                                robot_check_text = robot_check_html.text
-
-                                if "detected unusual traffic" in robot_check_text.lower():
-
-                                    console_complete("Blocked", False)
-
-                                    # Restart the vpn service with a new server.
-
-                                    # Get new index (THIS IS REPEATED CODE! CONSOLIDATE INTO A FUNCTION LATER)     
-                                    if 0 <= vpn_server_index < vpn_server_maximum:
-                                        vpn_server_index += 1
-                                    else:
-                                        vpn_server_index = 0
-
-                                    # Connect to the new server
-                                    this_vpn_server = vpn_country_code + str(vpn_server_index + vpn_server_offset)
-                                    console_action("Connecting to new VPN server", this_vpn_server.upper())
-                                    os.system("sudo openpyn -s " + this_vpn_server + " --daemon")
-                                    console_complete("Done", True)
-
-                                    # Update forced vpn change counter.
-                                    vpn_forced_changes += 1
-
-                            except:
-                                console_complete("Fine", True)
 
                             
 
