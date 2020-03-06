@@ -93,7 +93,7 @@ def find_match(sheet, column, text): # Search the existing data for matches... i
 # Define variables
 
 # File version information
-version = "1.7.2"
+version = "1.7.3"
 year_copyright = "2020"
 
 # Email details
@@ -118,8 +118,8 @@ states = list_data.get_states() # States (as a tuple)
 suburbs = list_data.get_suburbs() # Suburbs (as a disctionary of tuples)
 
 # Time calculation estimates
-time_per_search = 4.0 # Experimental value from first actual run
-time_per_check = 0.8 # NOT A REAL VALUE, ONLY AN ESTIMATE, REPLACE LATER
+time_per_search = 9.838699106057437 # Experimental value
+time_per_check = 0.8423052451580105 # Experimental value
 time_per_rank = 0.0 #TEMPVAR (ASIC RANKING) # CURRENTLY 0 BECAUSE NOT IMPLEMENTED
 
 pages_multiplier = 1.0185 # Add 1.85% (derived from test data)
@@ -735,7 +735,7 @@ while True:
             #"Difference from expected: " + difference_duration.strftime("%H:%M:%S") + "\n" \
             "Difference from expected: " + str(difference_duration) + "\n" \
             "Time per search: " + str(time_per_search_actual) + "\n" \
-            "Time per check: " + str(time_per_check_actual) + "\n" \
+            "Time per check: " + str(time_per_check_actual) \
             #"Time per rank: " + str(time_per_rank_actual) + "\n" \
         )
 
