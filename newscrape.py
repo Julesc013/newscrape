@@ -20,12 +20,13 @@ from email import encoders
 
 
 class listing: # Record structure to hold new listings found on each page.
-    def __init__(self, business_name, phone_number, email_address, business_website, yellow_pages_link):
+    def __init__(self, business_name, phone_number, email_address, business_website, yellow_pages_link, location_state):
         self.business_name = business_name
         self.phone_number = phone_number
         self.email_address = email_address
         self.business_website = business_website
         self.yellow_pages_link = yellow_pages_link
+        self.location_state = location_state
 
 
 def get_time_now():
@@ -93,7 +94,7 @@ def find_match(sheet, column, text): # Search the existing data for matches... i
 # Define variables
 
 # File version information
-version = "1.7.3"
+version = "1.8.0"
 year_copyright = "2020"
 
 # Email details
@@ -113,9 +114,10 @@ logs_path = r"/home/webscraper/Documents/Newscrape/Logs/"
 results_path = r"/home/webscraper/Documents/Newscrape/Results/"
 
 # Data to use to get listings
-clues = list_data.get_clues() # Clues (as a tuple)
+#clues = list_data.get_clues() # Clues (as a tuple)
+clues = [] # Clues is an empty list so the user can specifiy which clue to get (a feature in testing)
 states = list_data.get_states() # States (as a tuple)
-suburbs = list_data.get_suburbs() # Suburbs (as a disctionary of tuples)
+suburbs = list_data.get_suburbs() # Suburbs (as a dictionary of tuples)
 
 # Time calculation estimates
 time_per_search = 9.838699106057437 # Experimental value
@@ -154,6 +156,26 @@ runs_successful = 0
 
 vpn_server_index = random.randint(0, vpn_server_maximum) # Randomly get for the current vpn server in use (can change mid-run)
 vpn_forced_changes = 0
+
+
+
+# TEMPORARY? Get clue to search.
+
+clue_initial = input("Select a clue to use (e/p/c): ").lower()
+
+if clue_initial == "e":
+    this_clue = "electricians+electrical+contractors"
+elif clue_initial == "p":
+    this_clue = "plumbers+gas+fitters"
+elif clue_initial == "c":
+    this_clue = "builders+building+contractors"
+else:
+    console_message("Invalid clue, quitting Newscrape")
+    exit()
+
+clues.append(this_clue)
+
+
 
 
 # This loop runs forever (until interrupted via keyboard)
@@ -504,7 +526,7 @@ while True:
                                     yellow_page = business_name_html.get('href') # Link to the Yellow Pages listing.
 
                                 # Add sections to a record
-                                record = listing(name, phone, email, website, base_url + yellow_page)
+                                record = listing(name, phone, email, website, base_url + yellow_page, state)
                                 #record = listing(name, phone, email, base_url + yellow_page) # Use the YP listing instead of the actual website temporarily.
                                 # Append this record to the list of listings
                                 listings.append(record)
@@ -584,6 +606,7 @@ while True:
                 this_email = business.email_address
                 this_website = business.business_website
                 this_yellow_page = business.yellow_pages_link
+                this_location_state = business.location_state
 
                 # Search the sheet of all listings to see if it already exists
                 #this_name_exists = find_match(sheet_all, "A", this_name)
@@ -618,7 +641,7 @@ while True:
                     sheet_all.cell(row=sheet_index_all, column=2).value = this_phone # Phone
                     sheet_all.cell(row=sheet_index_all, column=3).value = this_email # Email
                     sheet_all.cell(row=sheet_index_all, column=4).value = this_website # Website
-                    sheet_all.cell(row=sheet_index_all, column=5).value = this_yellow_page # Yellow Page
+                    #sheet_all.cell(row=sheet_index_all, column=5).value = this_yellow_page # Yellow Page
 
 
                     ##console_action("Getting ASIC data for", business.business_name)
@@ -634,7 +657,8 @@ while True:
                     sheet_new.cell(row=sheet_index_new, column=2).value = this_phone # Phone
                     sheet_new.cell(row=sheet_index_new, column=3).value = this_email # Email
                     sheet_new.cell(row=sheet_index_new, column=4).value = this_website # Website
-                    sheet_new.cell(row=sheet_index_new, column=5).value = this_yellow_page # Yellow Page
+                    #sheet_new.cell(row=sheet_index_new, column=5).value = this_yellow_page # Yellow Page
+                    sheet_new.cell(row=sheet_index_new, column=5).value = this_location_state # Location State
 
 
                     # Save the changes to the files
