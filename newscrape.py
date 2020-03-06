@@ -1,4 +1,5 @@
 import os
+from subprocess import call
 from shutil import copyfile
 from openpyxl import Workbook
 from openpyxl import load_workbook,styles
@@ -103,6 +104,9 @@ email_password = 'lettuce5' # If the credentials are denied, go to this address 
 email_self = 'newscrape.listings@gmail.com'
 email_client = "julescarboni013@gmail.com" #'cam@camilloventura.com'
 
+# Root password for sudo
+root_password = "lettuce5"
+
 # VPN data
 vpn_country_code = "au"
 vpn_server_offset = 210 # Added to server index to bring into working range (au204 to au512)
@@ -124,7 +128,7 @@ time_per_search = 9.838699106057437 # Experimental value
 time_per_check = 0.8423052451580105 # Experimental value
 time_per_rank = 0.0 #TEMPVAR (ASIC RANKING) # CURRENTLY 0 BECAUSE NOT IMPLEMENTED
 
-pages_multiplier = 1.0185 # Add 1.85% (derived from test data)
+pages_multiplier = 1.027971 # Add 2.8% (derived from test data)
 checks_multiplier = 4.273
 ranks_multiplier = 0.05
 
@@ -288,20 +292,23 @@ while True:
 
         # Close any existing VPN services.
         console_action("Quitting existing VPN connections", "")
-        os.system("sudo openpyn -x")
+        #os.system("sudo openpyn -x")
+        this_command = "sudo openpyn -x"
+        call('echo {} | sudo -S {}'.format(root_password, this_command), shell=True)
         console_complete("Done", True)
 
         # Start the VPN service and log into a server.
         this_vpn_server = vpn_country_code + str(vpn_server_index + vpn_server_offset)
         console_action("Connecting to VPN server", this_vpn_server.upper())
-        os.system("sudo openpyn -s " + this_vpn_server + " --daemon")
+        #os.system("sudo openpyn -s " + this_vpn_server + " --daemon")
+        this_command = "sudo openpyn -s " + this_vpn_server + " --daemon"
+        call('echo {} | sudo -S {}'.format(root_password, this_command), shell=True)
         console_complete("Done", True)
 
 
         # Initialise the selenium webdriver
         console_action("Initialising Selenium webdriver", "")
         browser = webdriver.Firefox(capabilities=browser_capabilities)
-        webdriver.Firefox.quit
         console_complete("Done", True)
 
 
@@ -400,7 +407,9 @@ while True:
 
                                             console_action("Connecting to new VPN server", this_vpn_server.upper())
 
-                                            os.system("sudo openpyn -s " + this_vpn_server + " --daemon")
+                                            #os.system("sudo openpyn -s " + this_vpn_server + " --daemon")
+                                            this_command = "sudo openpyn -s " + this_vpn_server + " --daemon"
+                                            call('echo {} | sudo -S {}'.format(root_password, this_command), shell=True)
 
                                             console_complete("Done", True)
 
@@ -544,7 +553,9 @@ while True:
             console_message("Searching interrupted unexpectedly (" + str(ex) + ")")
 
 
-        browser.quit() # Gracefully quit driver, all done getting pages (ALWAYS DO THIS)
+        # All done getting pages. Gracefully quit the Firefox browser and the Selenium web driver.
+        browser.quit()
+        #webdriver.Firefox.quit
 
 
         time_searching_done = datetime.now() # The time at which all the downloading and searching was completed
@@ -876,7 +887,7 @@ while True:
 
         choice = input("To quit Newscrape enter \"quit\", or enter anything else to begin the next run: ")
         
-        if "quit" in choice.lower(): # Only exit if above condition met.
+        if choice.lower() in ("q", "quit") : # Only exit if above condition met.
             try:
                 console_message("Quit Newscrape manually")
             except:
