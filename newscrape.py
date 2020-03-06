@@ -179,6 +179,8 @@ else:
 
 clues.append(this_clue)
 
+console_message("Using clue " + this_clue)show
+
 
 
 
