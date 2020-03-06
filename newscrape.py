@@ -95,7 +95,7 @@ def find_match(sheet, column, text): # Search the existing data for matches... i
 # Define variables
 
 # File version information
-version = "1.8.0"
+version = "1.8.1"
 year_copyright = "2020"
 
 # Email details
