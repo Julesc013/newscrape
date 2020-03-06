@@ -179,8 +179,6 @@ else:
 
 clues.append(this_clue)
 
-console_message("Using clue " + this_clue)show
-
 
 
 
@@ -248,10 +246,13 @@ while True:
         log_file_path = os.path.join(logs_path, log_file_name)
 
         with open(log_file_path, 'w') as log_file:
-            log_file.write('Newscrape Console Log ' + get_time_now() + " (Jules Carboni, Copyright 2020, Version " + version + ")\n") # Write the header
+            log_file.write('Newscrape Console Log ' + get_time_now() + " (Jules Carboni, Copyright " + year_copyright + ", Version " + version + ")\n") # Write the header
 
         console_message("Created new log file " + log_file_name)
 
+
+        # Log the clue that is being used for this run/set
+        console_message("Using clue " + this_clue)
 
 
         # Count total pages to search through
