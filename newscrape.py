@@ -95,7 +95,7 @@ def find_match(sheet, column, text): # Search the existing data for matches... i
 # Define variables
 
 # File version information
-version = "1.8.1"
+version = "1.8.2"
 year_copyright = "2020"
 
 # Email details
@@ -118,8 +118,8 @@ logs_path = r"/home/webscraper/Documents/Newscrape/Logs/"
 results_path = r"/home/webscraper/Documents/Newscrape/Results/"
 
 # Data to use to get listings
-#clues = list_data.get_clues() # Clues (as a tuple)
-clues = [] # Clues is an empty list so the user can specifiy which clue to get (a feature in testing)
+clues = list_data.get_clues() # Clues (as a tuple)
+#clues = [] # Clues is an empty list so the user can specifiy which clue to get (a feature in testing)
 states = list_data.get_states() # States (as a tuple)
 suburbs = list_data.get_suburbs() # Suburbs (as a dictionary of tuples)
 
@@ -164,20 +164,20 @@ vpn_forced_changes = 0
 
 
 # TEMPORARY? Get clue to search.
-
-clue_initial = input("Select a clue to use (e/p/c): ").lower()
-
-if clue_initial == "e":
-    this_clue = "electricians+electrical+contractors"
-elif clue_initial == "p":
-    this_clue = "plumbers+gas+fitters"
-elif clue_initial == "c":
-    this_clue = "builders+building+contractors"
-else:
-    console_message("Invalid clue, quitting Newscrape")
-    exit()
-
-clues.append(this_clue)
+#
+#clue_initial = input("Select a clue to use (e/p/c): ").lower()
+#
+#if clue_initial == "e":
+#    this_clue = "electricians+electrical+contractors"
+#elif clue_initial == "p":
+#    this_clue = "plumbers+gas+fitters"
+#elif clue_initial == "c":
+#    this_clue = "builders+building+contractors"
+#else:
+#    console_message("Invalid clue, quitting Newscrape")
+#    exit()
+#
+#clues.append(this_clue)
 
 
 
@@ -251,8 +251,8 @@ while True:
         console_message("Created new log file " + log_file_name)
 
 
-        # Log the clue that is being used for this run/set
-        console_message("Using clue " + this_clue)
+        ## Log the clue that is being used for this run/set
+        #console_message("Using clue " + this_clue)
 
 
         # Count total pages to search through
@@ -612,7 +612,7 @@ while True:
                 #time_remaining = expected_duration_remaining - (index * time_per_check)
                 time_remaining = expected_duration_remaining * (1 - decimal_complete)
 
-                progress_stamp = "[" + str(round(percentage_complete, 2)) + "% T-" + format_time_seconds(time_remaining) + "] "
+                progress_stamp = "[" + str(round(percentage_complete, 3)) + "% T-" + format_time_seconds(time_remaining) + "] "
                 console_action(progress_stamp + "Checking", business.business_name)
 
                 this_name = business.business_name
