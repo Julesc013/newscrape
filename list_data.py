@@ -32,9 +32,9 @@ states = (
     )
 
 clues = (
-    'electricians+electrical+contractors',
-    'plumbers+gas+fitters',
-    'builders+building+contractors'
+    'electricians',
+    #'plumbers',
+    #'builders'
     )
 
 def get_suburbs():
