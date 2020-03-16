@@ -623,8 +623,8 @@ while True:
                 this_location_state = business.location_state
 
                 # Search the sheet of all listings to see if it already exists
-                #this_name_exists = find_match(sheet_all, "A", this_name)
-                this_name_exists = False # ALWAYS RETURN FALSE, WE WANT TO IGNORE THIS CHECK
+                this_name_exists = find_match(sheet_all, "A", this_name)
+                #this_name_exists = False # ALWAYS RETURN FALSE TO IGNORE THIS CHECK
                 this_phone_exists = find_match(sheet_all, "B", this_phone)
                 this_email_exists = find_match(sheet_all, "C", this_email)
                 this_website_exists = find_match(sheet_all, "D", this_website)
