@@ -114,8 +114,8 @@ vpn_server_maximum = 300 # Maximum number of servers that exist for this country
 # rest of vpn variables declared below
 
 # File paths
-logs_path = r"/home/webscraper/Documents/Newscrape/Logs/"
-results_path = r"/home/webscraper/Documents/Newscrape/Results/"
+logs_path = r"/home/newscrape/Documents/Newscrape/Logs/"
+results_path = r"/home/newscrape/Documents/Newscrape/Results/"
 
 # Data to use to get listings
 clues = list_data.get_clues() # Clues (as a tuple)
