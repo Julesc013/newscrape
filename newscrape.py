@@ -176,8 +176,7 @@ print("Loading all (existing) listings...", end="")
 
 load_all_file_path = results_path + "all_results" + all_file_extension
 # Load the listings into the dataframe.
-all_listings = pandas.read_excel(load_all_file_path,
-sheetname=0,
+all_listings = pandas.read_csv(load_all_file_path,
 header=0,
 index_col=False,
 keep_default_na=True
