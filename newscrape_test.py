@@ -144,9 +144,6 @@ address_base = ("https://www.yellowpages.com.au/search/listings?clue=", "&eventT
 browser_capabilities = DesiredCapabilities.FIREFOX.copy()
 browser_capabilities['accept_untrusted_certs'] = True
 
-# Define column names (same as the deprecated record structure).
-column_names = ["business_name", "phone_number", "email_address", "business_website", "yellow_pages_link", "location_state"]
-
 
 
 # BEGIN ACTIONS
@@ -193,9 +190,6 @@ except:
 
     # If file doesn't exist...
     print(" No existing listings.")
-
-    # Create blank new dataframe for all listings.
-    all_listings = pandas.DataFrame(columns = column_names)
 
 
 
@@ -255,9 +249,14 @@ while True:
 
         # Declare list(s) that will hold listing records.
         
+
         #all_listings = []
         #scraped_listings = []
         #new_listings = []
+
+
+        # Define column names (same as the deprecated record structure).
+        column_names = ["business_name", "phone_number", "email_address", "business_website", "yellow_pages_link", "location_state"]
 
         # Create the empty lists.
         scraped_listings = pandas.DataFrame(columns = column_names)
@@ -611,171 +610,168 @@ while True:
 
         # Check if each business listing already exists in our local database
 
-        try:
+        #@try:
 
-            print() # Add an empty line (to the terminal printout only) to make it more readable at a glance # DEBUG
-
-
-            # Load all-results worksheet
-
-            #console_action("Loading worksheets", "")
-
-            #book_all = load_workbook(filename = all_path) # Load the workbook
-            #sheet_all = book_all['Sheet1'] # Load the worksheet
-
-            #book_new = load_workbook(filename = new_path) # Load the workbook
-            #sheet_new = book_new['Sheet1'] # Load the worksheet
-
-            #console_complete("Done", True)
+        print() # Add an empty line (to the terminal printout only) to make it more readable at a glance # DEBUG
 
 
-            # Get the last row in the sheet
-            #final_row_all = sheet_all.max_row
-            #final_row_new = 1 #sheet_new.max_row # Always start at the top of the sheet
+        # Load all-results worksheet
+
+        #console_action("Loading worksheets", "")
+
+        #book_all = load_workbook(filename = all_path) # Load the workbook
+        #sheet_all = book_all['Sheet1'] # Load the worksheet
+
+        #book_new = load_workbook(filename = new_path) # Load the workbook
+        #sheet_new = book_new['Sheet1'] # Load the worksheet
+
+        #console_complete("Done", True)
 
 
-            # Calculate the expected time remaining
-            expected_duration_remaining = expected_duration - (expected_searches * time_per_search)
+        # Get the last row in the sheet
+        #final_row_all = sheet_all.max_row
+        #final_row_new = 1 #sheet_new.max_row # Always start at the top of the sheet
 
 
-            # Loop through each newly retrieved record
-
-            index = 0
-            # Use seperate indexes for sheets so that no rows are skipped in the spreadsheet
-            #sheet_index_all = final_row_all
-            #sheet_index_new = final_row_new
-
-            listings_count = len(scraped_listings.index) # For each listing gathered
-            while index <= listings_count - 1:
-
-                #business = scraped_listings[index]
-                business = scraped_listings.iloc[[index]]
-
-                # Get time values for the console display
-                decimal_complete = index / listings_count
-                percentage_complete = (decimal_complete) * 100
-                #time_remaining = expected_duration_remaining - (index * time_per_check)
-                time_remaining = expected_duration_remaining * (1 - decimal_complete)
-
-                progress_stamp = "[" + str(round(percentage_complete, 3)) + "% T-" + format_time_seconds(time_remaining) + "] "
-                #console_action(progress_stamp + "Checking", business.business_name)
-                console_action(progress_stamp + "Checking", str(business["business_name"]))
-
-                this_name = str(business["business_name"])
-                this_phone = str(business["phone_number"])
-                this_email = str(business["email_address"])
-                this_website = str(business["business_website"])
-                this_yellow_page = str(business["yellow_pages_link"])
-                this_location_state = str(business["location_state"])
+        # Calculate the expected time remaining
+        expected_duration_remaining = expected_duration - (expected_searches * time_per_search)
 
 
-                # Search the sheet of all listings to see if it already exists
+        # Loop through each newly retrieved record
 
-                this_name_exists = all_listings["business_name"].isin([this_name]).any()
-                this_phone_exists = all_listings["phone_number"].isin([this_phone]).any()
-                this_email_exists = all_listings["email_address"].isin([this_email]).any()
-                this_website_exists =  all_listings["business_website"].isin([this_website]).any()
-                this_yellow_page_exists = all_listings["yellow_pages_link"].isin([this_yellow_page]).any()
-                
-                # DEPRECATED BACKUP
-                #this_name_exists = this_name in all_listings["business_name"]
-                #this_phone_exists = this_phone in all_listings["phone_number"]
-                #this_email_exists = this_email in all_listings["email_address"]
-                #this_website_exists = this_website in all_listings["business_website"]
-                #this_yellow_page_exists = this_yellow_page in all_listings["yellow_pages_link"]
+        index = 0
+        # Use seperate indexes for sheets so that no rows are skipped in the spreadsheet
+        #sheet_index_all = final_row_all
+        #sheet_index_new = final_row_new
 
-                # DEPRECATED CODE (TEMP)
-                #this_name_exists = find_match(sheet_all, "A", this_name)
-                ##this_name_exists = False # ALWAYS RETURN FALSE TO IGNORE THIS CHECK
-                #this_phone_exists = find_match(sheet_all, "B", this_phone)
-                #this_email_exists = find_match(sheet_all, "C", this_email)
-                #this_website_exists = find_match(sheet_all, "D", this_website)
-                #this_yellow_page_exists = find_match(sheet_all, "E", this_yellow_page)
+        listings_count = len(scraped_listings.index) # For each listing gathered
+        while index <= listings_count - 1:
 
-                if this_name_exists or this_phone_exists or this_email_exists or this_website_exists or this_yellow_page_exists: # If any of the searches returned a True result for existence
+            #business = scraped_listings[index]
+            business = scraped_listings.iloc[[index]]
 
-                    console_complete("Already exists", False)
+            # Get time values for the console display
+            decimal_complete = index / listings_count
+            percentage_complete = (decimal_complete) * 100
+            #time_remaining = expected_duration_remaining - (index * time_per_check)
+            time_remaining = expected_duration_remaining * (1 - decimal_complete)
 
-                    # Keep sheet indexes the same
+            progress_stamp = "[" + str(round(percentage_complete, 3)) + "% T-" + format_time_seconds(time_remaining) + "] "
+            #console_action(progress_stamp + "Checking", business.business_name)
+            console_action(progress_stamp + "Checking", str(business["business_name"]))
 
-                else:
-
-                    console_complete("Found new listing", True)
-
-                    # Add the new listing to all-results spreadsheet
-
-                    # Using the old max row as a base get the next row number to write to
-                    # AKA Increment the indexes for this new row
-                    #sheet_index_all += 1
-                    #sheet_index_new += 1
-
-                    #console_action("Adding", business["business_name"] + " to spreadsheets")
-                    console_action("Adding", str(business["business_name"]) + " to new listings")
+            this_name = str(business["business_name"])
+            this_phone = str(business["phone_number"])
+            this_email = str(business["email_address"])
+            this_website = str(business["business_website"])
+            this_yellow_page = str(business["yellow_pages_link"])
+            this_location_state = str(business["location_state"])
 
 
-                    # Turn the new listing row into its own entire data frame.
-                    new_row_dataframe = pandas.DataFrame([business])
-                    # Concatinate this new data frame with the existing data frame.
-                    # Add to All Listings and New Listings.
-                    all_listings = pandas.concat([all_listings, new_row_dataframe], ignore_index=True)
-                    new_listings = pandas.concat([new_row_dataframe, new_listings], ignore_index=True) # Add the new one to the top of the old one (newest listing first).
+            # Search the sheet of all listings to see if it already exists
+
+            this_name_exists = all_listings["business_name"].isin([this_name]).any()
+            this_phone_exists = all_listings["phone_number"].isin([this_phone]).any()
+            this_email_exists = all_listings["email_address"].isin([this_email]).any()
+            this_website_exists =  all_listings["business_website"].isin([this_website]).any()
+            this_yellow_page_exists = all_listings["yellow_pages_link"].isin([this_yellow_page]).any()
+            
+            # DEPRECATED BACKUP
+            #this_name_exists = this_name in all_listings["business_name"]
+            #this_phone_exists = this_phone in all_listings["phone_number"]
+            #this_email_exists = this_email in all_listings["email_address"]
+            #this_website_exists = this_website in all_listings["business_website"]
+            #this_yellow_page_exists = this_yellow_page in all_listings["yellow_pages_link"]
+
+            # DEPRECATED CODE (TEMP)
+            #this_name_exists = find_match(sheet_all, "A", this_name)
+            ##this_name_exists = False # ALWAYS RETURN FALSE TO IGNORE THIS CHECK
+            #this_phone_exists = find_match(sheet_all, "B", this_phone)
+            #this_email_exists = find_match(sheet_all, "C", this_email)
+            #this_website_exists = find_match(sheet_all, "D", this_website)
+            #this_yellow_page_exists = find_match(sheet_all, "E", this_yellow_page)
+
+            if this_name_exists or this_phone_exists or this_email_exists or this_website_exists or this_yellow_page_exists: # If any of the searches returned a True result for existence
+
+                console_complete("Already exists", False)
+
+                # Keep sheet indexes the same
+
+            else:
+
+                console_complete("Found new listing", True)
+
+                # Add the new listing to all-results spreadsheet
+
+                # Using the old max row as a base get the next row number to write to
+                # AKA Increment the indexes for this new row
+                #sheet_index_all += 1
+                #sheet_index_new += 1
+
+                #console_action("Adding", business["business_name"] + " to spreadsheets")
+                console_action("Adding", str(business["business_name"]) + " to new listings")
 
 
-                    # Add to all listings sheet
-                    #sheet_all.cell(row=sheet_index_all, column=1).value = this_name # Name
-                    #sheet_all.cell(row=sheet_index_all, column=2).value = this_phone # Phone
-                    #sheet_all.cell(row=sheet_index_all, column=3).value = this_email # Email
-                    #sheet_all.cell(row=sheet_index_all, column=4).value = this_website # Website
-                    ##sheet_all.cell(row=sheet_index_all, column=5).value = this_yellow_page # Yellow Page
+                # Turn the new listing row into its own entire data frame.
+                new_row_dataframe = pandas.DataFrame([business])
+                # Concatinate this new data frame with the existing data frame.
+                # Add to All Listings and New Listings.
+                all_listings = pandas.concat([all_listings, new_row_dataframe], ignore_index=True)
+                new_listings = pandas.concat([new_row_dataframe, new_listings], ignore_index=True) # Add the new one to the top of the old one (newest listing first).
+
+
+                # Add to all listings sheet
+                #sheet_all.cell(row=sheet_index_all, column=1).value = this_name # Name
+                #sheet_all.cell(row=sheet_index_all, column=2).value = this_phone # Phone
+                #sheet_all.cell(row=sheet_index_all, column=3).value = this_email # Email
+                #sheet_all.cell(row=sheet_index_all, column=4).value = this_website # Website
+                ##sheet_all.cell(row=sheet_index_all, column=5).value = this_yellow_page # Yellow Page
 
 
 
 
-                    ##console_action("Getting ASIC data for", business.business_name)
+                ##console_action("Getting ASIC data for", business.business_name)
 
 
-                    ####### GET ASIC DATA!!!!!!!!!!!!!!!!!!
-                    # GET ASIC (ABN/ACN) DETAILS and SORT NEW LISTINGS BASED ON IF THEY HAVE A WEBSITE/ABN/ACN ((SEE ABOVE--GOES INSIDE FOR LOOP)).
-                    # ADD ASIC RANKING TO TIME CALCULATIONS
-                    #### Use the data in an algorithm to produce a ranking!!!
+                ####### GET ASIC DATA!!!!!!!!!!!!!!!!!!
+                # GET ASIC (ABN/ACN) DETAILS and SORT NEW LISTINGS BASED ON IF THEY HAVE A WEBSITE/ABN/ACN ((SEE ABOVE--GOES INSIDE FOR LOOP)).
+                # ADD ASIC RANKING TO TIME CALCULATIONS
+                #### Use the data in an algorithm to produce a ranking!!!
 
 
-                    # Add to new listings sheet
-                    #sheet_new.cell(row=sheet_index_new, column=1).value = this_name # Name
-                    #sheet_new.cell(row=sheet_index_new, column=2).value = this_phone # Phone
-                    #sheet_new.cell(row=sheet_index_new, column=3).value = this_email # Email
-                    #sheet_new.cell(row=sheet_index_new, column=4).value = this_website # Website
-                    ##sheet_new.cell(row=sheet_index_new, column=5).value = this_yellow_page # Yellow Page
-                    #sheet_new.cell(row=sheet_index_new, column=5).value = this_location_state # Location State
+                # Add to new listings sheet
+                #sheet_new.cell(row=sheet_index_new, column=1).value = this_name # Name
+                #sheet_new.cell(row=sheet_index_new, column=2).value = this_phone # Phone
+                #sheet_new.cell(row=sheet_index_new, column=3).value = this_email # Email
+                #sheet_new.cell(row=sheet_index_new, column=4).value = this_website # Website
+                ##sheet_new.cell(row=sheet_index_new, column=5).value = this_yellow_page # Yellow Page
+                #sheet_new.cell(row=sheet_index_new, column=5).value = this_location_state # Location State
 
 
-                    # Save the changes to the files
-                    #book_all.save(all_path)
-                    #book_new.save(new_path)
+                # Save the changes to the files
+                #book_all.save(all_path)
+                #book_new.save(new_path)
 
 
-                    console_complete("Done", True)
+                console_complete("Done", True)
 
 
-                index += 1 # Increment index (b/c not using a for loop)
+            index += 1 # Increment index (b/c not using a for loop)
 
 
-        except Exception as ex:
+        #@except Exception as ex:
 
             # If any shit hits the fan, stop checking and move onto emailing so that we at least don't lose the listings we have
 
-            console_message("Checking interrupted unexpectedly (" + str(ex) + ")")
+            #@console_message("Checking interrupted unexpectedly (" + str(ex) + ")")
 
-            this_run_successful = False
+            #@this_run_successful = False
 
 
 
         # Save all changes to the All Listings and New Listings data sets!
 
         console_action("Saving all and new listings", "") # ALWAYS DO THIS
-
-        # Delete the existing all_listings file to prevent strange overwrite behaviour.
-        os.remove(all_path)
 
         # Export the two lists to CSV files.
         all_listings.to_csv (all_path, index = False, header=True)
@@ -983,119 +979,3 @@ while True:
                 pass
 
             exit() # Quit (close selenium/browser but not openvpn/nordvpn)
-
-
-    except Exception as run_ex:
-        
-        #console_message("") # Always print the error message on a new line.
-        print("\n") # Add an empty line (to the terminal printout only) to make it more readable at a glance # DEBUG
-
-        # For any other exception, email the error code to self, then start the next run.
-        
-        crash_time = datetime.now() # Get the time of the crash
-        crash_time_string_short = crash_time.strftime("%d/%m/%Y %H:%M:%S")
-        crash_time_string_long = crash_time.strftime("%c")
-
-        try:
-            console_message("Caught error (" + str(run_ex) + ")")
-        except:
-            print("Caught error (" + str(run_ex) + ").")
-
-
-        try:
-            console_action("Emailing crash report", "to " + email_self)
-        except:
-            pass
-    
-        try: # Try to send the email, if it doesn't work, just go to the next run
-
-            # instance of MIMEMultipart 
-            msg = MIMEMultipart() 
-
-            # storing the senders email address   
-            msg['From'] = email_sender 
-            # storing the receivers email address  
-            msg['To'] = email_self 
-
-
-            
-            # string to store the body of the mail
-            
-            
-            # Get timedelta for uptime
-            time_crash_run = datetime.now()
-            time_uptime = time_crash_run - time_start_uptime # Final minus initial
-
-
-            # Get error message details
-            error_message = repr(run_ex)
-        
-            body_message = ("Newscrape – Crash/Error Report" + "\n"
-                            "\n"
-                            "Version: " + version + "\n"
-                            "Time: " + crash_time_string_long + "\n"
-                            "Uptime: " + str(time_uptime) + " (" + str(time_uptime.days) + " days)" + "\n"
-                            "Run: " + str(runs_completed + 1) + " (" + str(runs_successful) + " successful)" + "\n"
-                            "VPN: " + vpn_country_code + str(vpn_server_index + vpn_server_offset) + " (" + str(vpn_forced_changes) + " forced changes)" + "\n"
-                            "\n"
-                            "Exception details:" + "\n"
-                            "" + error_message + "\n")
-    
-            
-            body = body_message
-            
-            # attach the body with the msg instance 
-            msg.attach(MIMEText(body, 'plain')) 
-
-            
-            
-            # storing the subject
-            msg['Subject'] = 'Crash Report ' + crash_time_string_short
-
-
-            
-            # open the file to be sent  
-            filename = log_file_name
-            filepath_temp = logs_path + log_file_name
-            attachment = open(filepath_temp, "rb") 
-
-            # instance of MIMEBase and named as mime
-            mime = MIMEBase('application', 'octet-stream') 
-            # To change the payload into encoded form 
-            mime.set_payload((attachment).read()) 
-            # encode into base64 
-            encoders.encode_base64(mime) 
-            mime.add_header('Content-Disposition', "attachment; filename= %s" % filename) 
-            # attach the instance 'mime' to instance 'msg' 
-            msg.attach(mime)
-            # creates SMTP session 
-            smtp = smtplib.SMTP('smtp.gmail.com', 587) 
-            # start TLS for security 
-            smtp.starttls() 
-
-            # Authentication 
-            smtp.login(email_sender, email_password) 
-
-            # Converts the Multipart msg into a string 
-            text = msg.as_string() 
-
-            # sending the mail 
-            smtp.sendmail(email_sender, email_self, text) 
-
-
-            try:
-                console_complete("Success", True)
-            except:
-                print("Successfully sent error report.")
-
-        except Exception as ex:
-
-            try:
-                console_complete("Failed (" + str(ex) + ").", False)
-            except:
-                print("Failed to send error report (" + str(ex) + ").")
-
-
-
-        # terminating the session (ALWAYS DO THIS)
-        smtp.quit()
