@@ -96,7 +96,7 @@ def find_match(sheet, column, text): # Search the existing data for matches... i
 # Define variables
 
 # File version information
-version = "1.9.0"
+version = "1.9.1"
 year_copyright = "2020"
 
 # Email details
@@ -192,6 +192,7 @@ while True:
     
     
     runs_completed += 1
+    this_run_successful = True
 
     if 0 <= vpn_server_index < vpn_server_maximum: # If the index is between 0 to Max (300), then increment it to the next index, else reset it to zero.
         vpn_server_index += 1
@@ -588,6 +589,8 @@ while True:
 
             console_message("Searching interrupted unexpectedly (" + str(ex) + ")")
 
+            this_run_successful = False
+
 
         # All done getting pages. Gracefully quit the Firefox browser and the Selenium web driver.
         browser.quit()
@@ -660,11 +663,18 @@ while True:
 
                 # Search the sheet of all listings to see if it already exists
 
-                this_name_exists = this_name in all_listings["business_name"]
-                this_phone_exists = this_phone in all_listings["phone_number"]
-                this_email_exists = this_email in all_listings["email_address"]
-                this_website_exists = this_website in all_listings["business_website"]
-                this_yellow_page_exists = this_yellow_page in all_listings["yellow_pages_link"]
+                this_name_exists = all_listings["business_name"].isin([this_name]).any()
+                this_phone_exists = all_listings["phone_number"].isin([this_phone]).any()
+                this_email_exists = all_listings["email_address"].isin([this_email]).any()
+                this_website_exists =  all_listings["business_website"].isin([this_website]).any()
+                this_yellow_page_exists = all_listings["yellow_pages_link"].isin([this_yellow_page]).any()
+                
+                # DEPRECATED BACKUP
+                #this_name_exists = this_name in all_listings["business_name"]
+                #this_phone_exists = this_phone in all_listings["phone_number"]
+                #this_email_exists = this_email in all_listings["email_address"]
+                #this_website_exists = this_website in all_listings["business_website"]
+                #this_yellow_page_exists = this_yellow_page in all_listings["yellow_pages_link"]
 
                 # DEPRECATED CODE (TEMP)
                 #this_name_exists = find_match(sheet_all, "A", this_name)
@@ -748,6 +758,7 @@ while True:
 
             console_message("Checking interrupted unexpectedly (" + str(ex) + ")")
 
+            this_run_successful = False
 
 
 
@@ -923,7 +934,8 @@ while True:
 
 
         # Update number of completed runs
-        runs_successful += 1
+        if this_run_successful == True:
+            runs_successful += 1
 
         print() # Add an empty line (to the terminal printout only) to make it more readable at a glance # DEBUG
 
@@ -951,7 +963,7 @@ while True:
         except:
             print("Keyboard interrupt detected.")
 
-        choice = input("To quit Newscrape enter \"quit\", or enter anything else to begin the next run: ")
+        choice = input("To quit Newscrape return \"q\", or return anything else to begin the next run: ")
         
         if choice.lower() in ("q", "quit") : # Only exit if above condition met.
             try:
