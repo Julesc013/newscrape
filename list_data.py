@@ -2,8 +2,12 @@
 
 
 clues = (
+
+    'cleaners',
+    #'chemists',
+    #'it',
     #'electricians',
-    'plumbers',
+    #'plumbers',
     #'builders'
     )
 

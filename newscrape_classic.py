@@ -92,6 +92,14 @@ def find_match(sheet, column, text): # Search the existing data for matches... i
     return False # Else (if none found) return false
 
 
+def hms_time(input_time):
+    seconds = input_time.total_seconds()
+    mins, secs = divmod(seconds, 60)
+    hours, mins = divmod(mins, 60)
+    return "{hour} hours {min} mins {sec} secs".format(hour=int(hours), min=int(mins), sec=int(secs))    
+
+
+
 # Define variables
 
 # File version information
@@ -145,6 +153,7 @@ browser_capabilities['accept_untrusted_certs'] = True
 
 print("\n" + "NEWSCRAPE – Yellow Pages Web-Scraper", \
     "Jules Carboni, Copyright " + year_copyright + ", Version " + version, \
+    "NOTE: Run only via \"sh run_classic.sh\" (cannot use sudo).", \
     sep="\n")
 
 input("\n" + "Press Enter/Return key to begin (wait for password prompt please)...")
@@ -618,7 +627,7 @@ while True:
                 #time_remaining = expected_duration_remaining - (index * time_per_check)
                 time_remaining = expected_duration_remaining * (1 - decimal_complete)
 
-                progress_stamp = "[" + str(round(percentage_complete, 3)) + "% T-" + format_time_seconds(time_remaining) + "] "
+                progress_stamp = "[" + str(round(percentage_complete, 2)) + "% T-" + format_time_seconds(time_remaining) + "] "
                 console_action(progress_stamp + "Checking", business.business_name)
 
                 this_name = business.business_name
@@ -772,8 +781,9 @@ while True:
                             "\n"
                             "Version: " + version + "\n"
                             "Time: " + finish_time.strftime("%c") + "\n"
-                            "Uptime: " + str(time_uptime) + " (" + str(time_uptime.days) + " days)" + "\n"
-                            "Run: " + str(runs_completed + 1) + " (" + str(runs_successful) + " successful)" + "\n"
+                            #"Uptime: " + str(time_uptime) + " (" + str(time_uptime.days * 24) + "+ hours)" + "\n"
+                            "Uptime: " + hms_time(time_uptime) + " (" + str(time_uptime.days) + " days)" + "\n"
+                            "Run: " + str(runs_completed + 1) + " (" + str(runs_successful) + " successful prior)" + "\n"
                             "Status: " + status_message + "\n"
                             "VPN: " + vpn_country_code + str(vpn_server_index + vpn_server_offset) + " (" + str(vpn_forced_changes) + " forced changes)" + "\n")
 
@@ -870,7 +880,10 @@ while True:
 
 
             # terminating the session (ALWAYS DO THIS)
-            smtp.quit()
+            try:
+                smtp.quit()
+            except:
+                pass
 
 
 
@@ -964,8 +977,8 @@ while True:
                             "\n"
                             "Version: " + version + "\n"
                             "Time: " + crash_time_string_long + "\n"
-                            "Uptime: " + str(time_uptime) + " (" + str(time_uptime.days) + " days)" + "\n"
-                            "Run: " + str(runs_completed + 1) + " (" + str(runs_successful) + " successful)" + "\n"
+                            "Uptime: " + hms_time(time_uptime) + " (" + str(time_uptime.days) + " days)" + "\n"
+                            "Run: " + str(runs_completed + 1) + " (" + str(runs_successful) + " successful prior)" + "\n"
                             "VPN: " + vpn_country_code + str(vpn_server_index + vpn_server_offset) + " (" + str(vpn_forced_changes) + " forced changes)" + "\n"
                             "\n"
                             "Exception details:" + "\n"
@@ -1028,4 +1041,7 @@ while True:
 
 
         # terminating the session (ALWAYS DO THIS)
-        smtp.quit()
+        try:
+            smtp.quit()
+        except:
+            pass
