@@ -1,7 +1,6 @@
 import os
 from subprocess import call
 from shutil import copyfile
-import pandas
 from openpyxl import Workbook
 from openpyxl import load_workbook,styles
 from bs4 import BeautifulSoup
@@ -13,22 +12,22 @@ from math import ceil
 import random
 from time import time, sleep
 from datetime import datetime, date, time, timedelta
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.mime.base import MIMEBase
-from email import encoders
 import list_data # The file containing the lists of suburbs (in the same directory)
+import smtplib 
+from email.mime.multipart import MIMEMultipart 
+from email.mime.text import MIMEText 
+from email.mime.base import MIMEBase 
+from email import encoders 
 
 
-#class listing: # Record structure to hold new listings found on each page.
-#    def __init__(self, business_name, phone_number, email_address, business_website, yellow_pages_link, location_state):
-#        self.business_name = business_name
-#       self.phone_number = phone_number
-#        self.email_address = email_address
-#        self.business_website = business_website
-#        self.yellow_pages_link = yellow_pages_link
-#        self.location_state = location_state
+class listing: # Record structure to hold new listings found on each page.
+    def __init__(self, business_name, phone_number, email_address, business_website, yellow_pages_link, location_state):
+        self.business_name = business_name
+        self.phone_number = phone_number
+        self.email_address = email_address
+        self.business_website = business_website
+        self.yellow_pages_link = yellow_pages_link
+        self.location_state = location_state
 
 
 def get_time_now():
@@ -100,10 +99,11 @@ def hms_time(input_time):
     return "{hour} hours {min} mins {sec} secs".format(hour=int(hours), min=int(mins), sec=int(secs))    
 
 
+
 # Define variables
 
 # File version information
-version = "1.9.1"
+version = "2.0.0"
 year_copyright = "2020"
 
 # Email details
@@ -121,16 +121,13 @@ vpn_server_offset = 210 # Added to server index to bring into working range (au2
 vpn_server_maximum = 300 # Maximum number of servers that exist for this country (must be offset for use).
 # rest of vpn variables declared below
 
-# File extensions
-all_file_extension = ".csv"
-new_file_extension = ".csv"
-
 # File paths
 logs_path = r"/home/newscrape/Documents/Newscrape/Logs/"
 results_path = r"/home/newscrape/Documents/Newscrape/Results/"
 
 # Data to use to get listings
 clues = list_data.get_clues() # Clues (as a tuple)
+#clues = [] # Clues is an empty list so the user can specifiy which clue to get (a feature in testing)
 states = list_data.get_states() # States (as a tuple)
 suburbs = list_data.get_suburbs() # Suburbs (as a dictionary of tuples)
 
@@ -143,16 +140,11 @@ pages_multiplier = 1.027971 # Add 2.8% (derived from test data)
 checks_multiplier = 4.273
 ranks_multiplier = 0.05
 
-#time_to_load = 2400 # Time taken to load in the existing data when launching the program.
-
 # Web address template
 address_base = ("https://www.yellowpages.com.au/search/listings?clue=", "&eventType=pagination&openNow=false&pageNumber=", "&referredBy=UNKNOWN&&state=", "&suburb=", "+") # [0], clue, [1], page, [2] state, [3] suburb+state)
 # Set capabilities of the firefox driver (specifically that it is allowed to ignore SSL/insecurity warnings)
 browser_capabilities = DesiredCapabilities.FIREFOX.copy()
 browser_capabilities['accept_untrusted_certs'] = True
-
-# Define column names (same as the deprecated record structure).
-column_names = ["business_name", "phone_number", "email_address", "business_website", "yellow_pages_link", "location_state"]
 
 
 
@@ -161,7 +153,7 @@ column_names = ["business_name", "phone_number", "email_address", "business_webs
 
 print("\n" + "NEWSCRAPE – Yellow Pages Web-Scraper", \
     "Jules Carboni, Copyright " + year_copyright + ", Version " + version, \
-    "NOTE: Run only via \"sh run.sh\" (cannot use sudo).", \
+    "NOTE: Run only via \"sh run_classic.sh\" (cannot use sudo).", \
     sep="\n")
 
 input("\n" + "Press Enter/Return key to begin (wait for password prompt please)...")
@@ -180,30 +172,21 @@ vpn_forced_changes = 0
 
 
 
-# Load all listings into a data set for comparing and storage. This is the huge-everything-master list.
-
-print()
-print("Loading all (existing) listings...", end="")
-
-try:
-        
-    load_all_file_path = results_path + "all_results" + all_file_extension
-    # Load the listings into the dataframe.
-    all_listings = pandas.read_csv(load_all_file_path,
-    header=0,
-    index_col=False,
-    keep_default_na=True
-    )
-
-    print(" Done.")
-
-except:
-
-    # If file doesn't exist...
-    print(" No existing listings.")
-
-    # Create blank new dataframe for all listings.
-    all_listings = pandas.DataFrame(columns = column_names)
+# TEMPORARY? Get clue to search.
+#
+#clue_initial = input("Select a clue to use (e/p/c): ").lower()
+#
+#if clue_initial == "e":
+#    this_clue = "electricians+electrical+contractors"
+#elif clue_initial == "p":
+#    this_clue = "plumbers+gas+fitters"
+#elif clue_initial == "c":
+#    this_clue = "builders+building+contractors"
+#else:
+#    console_message("Invalid clue, quitting Newscrape")
+#    exit()
+#
+#clues.append(this_clue)
 
 
 
@@ -212,8 +195,10 @@ except:
 while True:
     
     
-    runs_completed += 1
     this_run_successful = True
+    this_run_failures = []
+
+    runs_completed += 1
 
     if 0 <= vpn_server_index < vpn_server_maximum: # If the index is between 0 to Max (300), then increment it to the next index, else reset it to zero.
         vpn_server_index += 1
@@ -245,31 +230,21 @@ while True:
         time_atm = datetime.now() # Get time stamp for output files
         time_atm_string = time_atm.strftime("%d%m%Y_%H%M%S")
 
-
-        # Get current session's FILE NAMES
-        all_file = "all_results" + all_file_extension
-        all_backup_file = "all_results_" + time_atm_string + all_file_extension + ".bak"
-        new_file = "new_results_" + time_atm_string + new_file_extension
-        #template_file = "new_results_template" + new_file_extension
-
-        # Get current session's FILE PATHS
+        # Get current session's file names
+        all_file = "all_results.xlsx"
+        all_backup_file = "all_results_" + time_atm_string + ".xlsx.bak"
+        new_file = "new_results_" + time_atm_string + ".xlsx"
+        template_file = "new_results_template.xlsx"
+        # Get current session's file paths
         all_path = results_path + all_file
         all_backup_path = results_path + all_backup_file
         new_path = results_path + new_file
-        #template_path = results_path + template_file
-
-
+        template_path = results_path + template_file
 
 
         # Declare list(s) that will hold listing records.
-        
-        #all_listings = []
-        #scraped_listings = []
+        listings = []
         #new_listings = []
-
-        # Create the empty lists.
-        scraped_listings = pandas.DataFrame(columns = column_names)
-        new_listings = pandas.DataFrame(columns = column_names)
 
 
 
@@ -323,16 +298,11 @@ while True:
 
 
 
-        # Make a fresh copy of the new-results template for editing. (DEPRECATED TEMP)
-        #console_action("Making new spreadsheets", "")
-        #copyfile(template_path, new_path) # Create new blank sheet for new listings
-        #console_complete("Done", True)
-
-        # Make a backup of the 'all listings' file.
-        console_action("Backing up all listings", "")
+        # Make a fresh copy of the new-results template for editing.
+        console_action("Making new spreadsheets", "")
+        copyfile(template_path, new_path) # Create new blank sheet for new listings
         copyfile(all_path, all_backup_path) # Create a backup of the current sheet of all listings
         console_complete("Done", True)
-
 
 
         # Close any existing VPN services.
@@ -579,19 +549,11 @@ while True:
                                 if business_name_html is not None:
                                     yellow_page = business_name_html.get('href') # Link to the Yellow Pages listing.
 
-
-                                # Put the newly scraped data into a data row.
-                                scraped_data_row = pandas.Series([name, phone, email, website, base_url + yellow_page, state])
-                                # Turn the data row into its own entire data frame.
-                                scraped_row_dataframe = pandas.DataFrame([scraped_data_row])
-                                # Concatinate this new data frame with the existing data frame. 
-                                scraped_listings = pandas.concat([scraped_listings, scraped_row_dataframe], ignore_index=True)
-
-                                ## OLD CODE (TEMP)
-                                #record = listing(name, phone, email, website, base_url + yellow_page, state)
+                                # Add sections to a record
+                                record = listing(name, phone, email, website, base_url + yellow_page, state)
                                 #record = listing(name, phone, email, base_url + yellow_page) # Use the YP listing instead of the actual website temporarily.
                                 # Append this record to the list of listings
-                                #scraped_listings.append(record)
+                                listings.append(record)
 
 
                                 console_complete("Done", True)
@@ -602,10 +564,11 @@ while True:
         except Exception as ex:
 
             # If any shit hits the fan, stop searching and move onto checking so that we at least don't lose the listings we have
+            
+            this_run_successful = False
+            this_run_failures.append("Searching")
 
             console_message("Searching interrupted unexpectedly (" + str(ex) + ")")
-
-            this_run_successful = False
 
 
         # All done getting pages. Gracefully quit the Firefox browser and the Selenium web driver.
@@ -626,20 +589,20 @@ while True:
 
             # Load all-results worksheet
 
-            #console_action("Loading worksheets", "")
+            console_action("Loading worksheets", "")
 
-            #book_all = load_workbook(filename = all_path) # Load the workbook
-            #sheet_all = book_all['Sheet1'] # Load the worksheet
+            book_all = load_workbook(filename = all_path) # Load the workbook
+            sheet_all = book_all['Sheet1'] # Load the worksheet
 
-            #book_new = load_workbook(filename = new_path) # Load the workbook
-            #sheet_new = book_new['Sheet1'] # Load the worksheet
+            book_new = load_workbook(filename = new_path) # Load the workbook
+            sheet_new = book_new['Sheet1'] # Load the worksheet
 
-            #console_complete("Done", True)
+            console_complete("Done", True)
 
 
             # Get the last row in the sheet
-            #final_row_all = sheet_all.max_row
-            #final_row_new = 1 #sheet_new.max_row # Always start at the top of the sheet
+            final_row_all = sheet_all.max_row
+            final_row_new = 1 #sheet_new.max_row # Always start at the top of the sheet
 
 
             # Calculate the expected time remaining
@@ -650,14 +613,13 @@ while True:
 
             index = 0
             # Use seperate indexes for sheets so that no rows are skipped in the spreadsheet
-            #sheet_index_all = final_row_all
-            #sheet_index_new = final_row_new
+            sheet_index_all = final_row_all
+            sheet_index_new = final_row_new
 
-            listings_count = len(scraped_listings.index) # For each listing gathered
+            listings_count = len(listings) # For each listing gathered
             while index <= listings_count - 1:
 
-                #business = scraped_listings[index]
-                business = scraped_listings.iloc[[index]]
+                business = listings[index]
 
                 # Get time values for the console display
                 decimal_complete = index / listings_count
@@ -666,39 +628,22 @@ while True:
                 time_remaining = expected_duration_remaining * (1 - decimal_complete)
 
                 progress_stamp = "[" + str(round(percentage_complete, 2)) + "% T-" + format_time_seconds(time_remaining) + "] "
-                #console_action(progress_stamp + "Checking", business.business_name)
-                console_action(progress_stamp + "Checking", str(business["business_name"]))
+                console_action(progress_stamp + "Checking", business.business_name)
 
-                this_name = str(business["business_name"])
-                this_phone = str(business["phone_number"])
-                this_email = str(business["email_address"])
-                this_website = str(business["business_website"])
-                this_yellow_page = str(business["yellow_pages_link"])
-                this_location_state = str(business["location_state"])
-
+                this_name = business.business_name
+                this_phone = business.phone_number
+                this_email = business.email_address
+                this_website = business.business_website
+                this_yellow_page = business.yellow_pages_link
+                this_location_state = business.location_state
 
                 # Search the sheet of all listings to see if it already exists
-
-                this_name_exists = all_listings["business_name"].isin([this_name]).any()
-                this_phone_exists = all_listings["phone_number"].isin([this_phone]).any()
-                this_email_exists = all_listings["email_address"].isin([this_email]).any()
-                this_website_exists =  all_listings["business_website"].isin([this_website]).any()
-                this_yellow_page_exists = all_listings["yellow_pages_link"].isin([this_yellow_page]).any()
-                
-                # DEPRECATED BACKUP
-                #this_name_exists = this_name in all_listings["business_name"]
-                #this_phone_exists = this_phone in all_listings["phone_number"]
-                #this_email_exists = this_email in all_listings["email_address"]
-                #this_website_exists = this_website in all_listings["business_website"]
-                #this_yellow_page_exists = this_yellow_page in all_listings["yellow_pages_link"]
-
-                # DEPRECATED CODE (TEMP)
-                #this_name_exists = find_match(sheet_all, "A", this_name)
-                ##this_name_exists = False # ALWAYS RETURN FALSE TO IGNORE THIS CHECK
-                #this_phone_exists = find_match(sheet_all, "B", this_phone)
-                #this_email_exists = find_match(sheet_all, "C", this_email)
-                #this_website_exists = find_match(sheet_all, "D", this_website)
-                #this_yellow_page_exists = find_match(sheet_all, "E", this_yellow_page)
+                this_name_exists = find_match(sheet_all, "A", this_name)
+                #this_name_exists = False # ALWAYS RETURN FALSE TO IGNORE THIS CHECK
+                this_phone_exists = find_match(sheet_all, "B", this_phone)
+                this_email_exists = find_match(sheet_all, "C", this_email)
+                this_website_exists = find_match(sheet_all, "D", this_website)
+                this_yellow_page_exists = find_match(sheet_all, "E", this_yellow_page)
 
                 if this_name_exists or this_phone_exists or this_email_exists or this_website_exists or this_yellow_page_exists: # If any of the searches returned a True result for existence
 
@@ -714,33 +659,21 @@ while True:
 
                     # Using the old max row as a base get the next row number to write to
                     # AKA Increment the indexes for this new row
-                    #sheet_index_all += 1
-                    #sheet_index_new += 1
+                    sheet_index_all += 1
+                    sheet_index_new += 1
 
-                    #console_action("Adding", business["business_name"] + " to spreadsheets")
-                    console_action("Adding", str(business["business_name"]) + " to new listings")
-
-
-                    # Turn the new listing row into its own entire data frame.
-                    new_row_dataframe = pandas.DataFrame([business])
-                    # Concatinate this new data frame with the existing data frame.
-                    # Add to All Listings and New Listings.
-                    all_listings = pandas.concat([all_listings, new_row_dataframe], ignore_index=True)
-                    new_listings = pandas.concat([new_row_dataframe, new_listings], ignore_index=True) # Add the new one to the top of the old one (newest listing first).
+                    console_action("Adding", business.business_name + " to spreadsheets")
 
 
                     # Add to all listings sheet
-                    #sheet_all.cell(row=sheet_index_all, column=1).value = this_name # Name
-                    #sheet_all.cell(row=sheet_index_all, column=2).value = this_phone # Phone
-                    #sheet_all.cell(row=sheet_index_all, column=3).value = this_email # Email
-                    #sheet_all.cell(row=sheet_index_all, column=4).value = this_website # Website
-                    ##sheet_all.cell(row=sheet_index_all, column=5).value = this_yellow_page # Yellow Page
-
-
+                    sheet_all.cell(row=sheet_index_all, column=1).value = this_name # Name
+                    sheet_all.cell(row=sheet_index_all, column=2).value = this_phone # Phone
+                    sheet_all.cell(row=sheet_index_all, column=3).value = this_email # Email
+                    sheet_all.cell(row=sheet_index_all, column=4).value = this_website # Website
+                    #sheet_all.cell(row=sheet_index_all, column=5).value = this_yellow_page # Yellow Page
 
 
                     ##console_action("Getting ASIC data for", business.business_name)
-
 
                     ####### GET ASIC DATA!!!!!!!!!!!!!!!!!!
                     # GET ASIC (ABN/ACN) DETAILS and SORT NEW LISTINGS BASED ON IF THEY HAVE A WEBSITE/ABN/ACN ((SEE ABOVE--GOES INSIDE FOR LOOP)).
@@ -749,17 +682,17 @@ while True:
 
 
                     # Add to new listings sheet
-                    #sheet_new.cell(row=sheet_index_new, column=1).value = this_name # Name
-                    #sheet_new.cell(row=sheet_index_new, column=2).value = this_phone # Phone
-                    #sheet_new.cell(row=sheet_index_new, column=3).value = this_email # Email
-                    #sheet_new.cell(row=sheet_index_new, column=4).value = this_website # Website
-                    ##sheet_new.cell(row=sheet_index_new, column=5).value = this_yellow_page # Yellow Page
-                    #sheet_new.cell(row=sheet_index_new, column=5).value = this_location_state # Location State
+                    sheet_new.cell(row=sheet_index_new, column=1).value = this_name # Name
+                    sheet_new.cell(row=sheet_index_new, column=2).value = this_phone # Phone
+                    sheet_new.cell(row=sheet_index_new, column=3).value = this_email # Email
+                    sheet_new.cell(row=sheet_index_new, column=4).value = this_website # Website
+                    #sheet_new.cell(row=sheet_index_new, column=5).value = this_yellow_page # Yellow Page
+                    sheet_new.cell(row=sheet_index_new, column=5).value = this_location_state # Location State
 
 
                     # Save the changes to the files
-                    #book_all.save(all_path)
-                    #book_new.save(new_path)
+                    book_all.save(all_path)
+                    book_new.save(new_path)
 
 
                     console_complete("Done", True)
@@ -772,33 +705,25 @@ while True:
 
             # If any shit hits the fan, stop checking and move onto emailing so that we at least don't lose the listings we have
 
+            this_run_successful = False
+            this_run_failures.append("Checking")
+
             console_message("Checking interrupted unexpectedly (" + str(ex) + ")")
 
-            this_run_successful = False
 
+        # Save all changes
+        console_action("Saving spreadsheets", "") # ALWAYS DO THIS
 
+        # Save the changes to the files
+        book_all.save(all_path)
+        book_new.save(new_path)
 
-        # Save all changes to the All Listings and New Listings data sets!
-
-        console_action("Saving all and new listings", "") # ALWAYS DO THIS
-
-        # Delete the existing all_listings file to prevent strange overwrite behaviour.
-        os.remove(all_path)
-
-        # Export the two lists to CSV files.
-        all_listings.to_csv (all_path, index = False, header=True)
-        new_listings.to_csv (new_path, index = False, header=True)
-
-        # Save the changes to the Excel files (DEPRECATED TEMP).
-        #book_all.save(all_path)
-        #book_new.save(new_path)
-        #book_all.close()
+        book_all.close()
 
         console_complete("Done", True)
 
 
         print() # Add an empty line (to the terminal printout only) to make it more readable at a glance # DEBUG
-
 
 
         time_checking_done = datetime.now() # The time at which all the checking was completed (incl. writing to the all-spreadsheet)
@@ -810,9 +735,9 @@ while True:
         # Calculate statistics
 
         #total_pages_count = pages_counter
-        scraped_listings_count = len(scraped_listings.index)
+        total_listings_count = len(listings)
         #new_listings_count = len(new_listings)
-        new_listings_count = len(new_listings.index)
+        new_listings_count = sheet_index_new - final_row_new
         #all_listings_count = sheet_index_all - final_row_all #same as tot_list_count
 
         finish_time = datetime.now()
@@ -824,7 +749,7 @@ while True:
         #time_ranking_duration = time_ranking_done - time_checking_done
 
         time_per_search_actual = time_searching_duration.total_seconds() / expected_searches
-        time_per_check_actual = time_checking_duration.total_seconds() / scraped_listings_count
+        time_per_check_actual = time_checking_duration.total_seconds() / total_listings_count
         #time_per_rank_actual = time_ranking_duration.total_seconds() / new_listings_count
 
 
@@ -845,18 +770,25 @@ while True:
 
         # Get timedelta for uptime
         time_uptime = finish_time - time_start_uptime # Final minus initial
+
+        if this_run_successful == False:
+            status_message = "Failed (" + str(this_run_failures)
+        else:
+            status_message = "Successful"
     
 
         status_message = ("Newscrape – Results Report" + "\n"
                             "\n"
                             "Version: " + version + "\n"
                             "Time: " + finish_time.strftime("%c") + "\n"
+                            #"Uptime: " + str(time_uptime) + " (" + str(time_uptime.days * 24) + "+ hours)" + "\n"
                             "Uptime: " + hms_time(time_uptime) + " (" + str(time_uptime.days) + " days)" + "\n"
                             "Run: " + str(runs_completed + 1) + " (" + str(runs_successful) + " successful prior)" + "\n"
+                            "Status: " + status_message + "\n"
                             "VPN: " + vpn_country_code + str(vpn_server_index + vpn_server_offset) + " (" + str(vpn_forced_changes) + " forced changes)" + "\n")
 
         results_message = ("Total pages: " + str(pages_counter) + "\n" \
-            "Total listings: " + str(scraped_listings_count) + "\n" \
+            "Total listings: " + str(total_listings_count) + "\n" \
             "Total new listings: " + str(new_listings_count) + "\n" \
             "Duration of searching: " + str(time_searching_duration) + "\n" \
             "Duration of checking: " + str(time_checking_duration) + "\n" \
@@ -955,7 +887,7 @@ while True:
 
 
 
-        # Update number of completed runs
+        # Update number of completed runs only if successful
         if this_run_successful == True:
             runs_successful += 1
 
@@ -985,7 +917,7 @@ while True:
         except:
             print("Keyboard interrupt detected.")
 
-        choice = input("To quit Newscrape return \"q\", or return anything else to begin the next run: ")
+        choice = input("To quit Newscrape enter \"quit\", or enter anything else to begin the next run: ")
         
         if choice.lower() in ("q", "quit") : # Only exit if above condition met.
             try:
@@ -1109,4 +1041,7 @@ while True:
 
 
         # terminating the session (ALWAYS DO THIS)
-        smtp.quit()
+        try:
+            smtp.quit()
+        except:
+            pass
